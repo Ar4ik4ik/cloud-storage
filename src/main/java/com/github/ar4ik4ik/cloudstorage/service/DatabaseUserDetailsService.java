@@ -1,0 +1,36 @@
+package com.github.ar4ik4ik.cloudstorage.service;
+
+import com.github.ar4ik4ik.cloudstorage.entity.Authority;
+import com.github.ar4ik4ik.cloudstorage.entity.AuthorityType;
+import com.github.ar4ik4ik.cloudstorage.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class DatabaseUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    @Transactional(readOnly = true)
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return this.userRepository.findUserByUsername(username)
+                .map(user -> User.builder()
+                        .username(user.getUsername())
+                        .password(user.getPassword())
+                        .authorities(user.getAuthorities().stream()
+                                .map(Authority::getName)
+                                .map(AuthorityType::getAuthority)
+                                .map(SimpleGrantedAuthority::new)
+                                .toList())
+                        .build()).orElseThrow(() -> new UsernameNotFoundException(
+                        "User with username: %s not found".formatted(username)));
+    }
+}
