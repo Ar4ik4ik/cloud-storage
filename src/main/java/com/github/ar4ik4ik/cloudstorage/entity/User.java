@@ -32,8 +32,8 @@ public class User {
     private OffsetDateTime createdAt;
 
     @ManyToMany
-    @JoinTable(name = "t_user_roles", schema = "user_management",
+    @JoinTable(name = "t_user_authorities", schema = "user_management",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+            inverseJoinColumns = @JoinColumn(name = "authority_id"))
     private List<Authority> authorities;
 }

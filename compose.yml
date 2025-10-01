@@ -10,9 +10,38 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U cloud-storage-application -d cloud-storage-application" ]
+      test: [ "CMD-SHELL", "pg_isready -U cloud-storage-application -d cloud-storage" ]
       interval: 10s
       timeout: 5s
       retries: 10
+  redis:
+    image: redis:8.2.1
+    environment:
+      REDIS_PASSWORD: 'cloud-storage-application'
+      REDIS_USER: 'cloud-storage-application'
+      REDIS_USER_PASSWORD: 'cloud-storage-application'
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redisdata:/data
+    command: >
+      sh -c '
+        mkdir -p /usr/local/etc/redis &&
+        echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+        echo "requirepass cloud-storage-application" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+        echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
+        echo "user cloud-storage-application on >cloud-storage-application ~* +@all" >> /usr/local/etc/redis/users.acl &&
+        redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+      '
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "cloud-storage-application", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
 volumes:
   pgdata:
