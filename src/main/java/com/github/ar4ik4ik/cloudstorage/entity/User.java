@@ -26,10 +26,12 @@ public class User {
 
     private String password;
 
-    private Boolean enabled;
+    @Builder.Default
+    private Boolean enabled = true;
 
+    @Builder.Default
     @Column(name = "created_at", columnDefinition = "timestamptz")
-    private OffsetDateTime createdAt;
+    private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @ManyToMany
     @JoinTable(name = "t_user_authorities", schema = "user_management",
