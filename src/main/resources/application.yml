@@ -1,0 +1,45 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: cloud-storage
+  datasource:
+    url: jdbc:postgresql://${HOST}:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    schemas:
+      - public
+      - user_management
+  docker:
+    compose:
+      enabled: true
+      file: ./compose.yml
+      lifecycle-management: start-only   # или start-and-stop
+      start:
+        command: up
+  jpa:
+    hibernate:
+      ddl-auto: none
+    generate-ddl: true
+    show-sql: true
+  data:
+    redis:
+      host: ${HOST}
+      password: ${REDIS_PASSWORD}
+      port: 6379
+      database: 0
+  session:
+    redis:
+      flush-mode: on-save
+      namespace: spring:session
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 60s
+logging:
+  level:
+    org.springframework.session: DEBUG
+    org.springframework.data.redis: DEBUG
