@@ -43,3 +43,9 @@ logging:
   level:
     org.springframework.session: DEBUG
     org.springframework.data.redis: DEBUG
+minio:
+  url: http://${HOST}:9000
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+  bucket:
+    name: user-files

@@ -7,6 +7,7 @@ services:
 #    depends_on:
 #      - db
 #      - redis
+#      - minio
 #    env_file:
 #      - .env
 #    environment:
@@ -58,5 +59,22 @@ services:
     restart: unless-stopped
     tty: true
     stdin_open: true
+  minio:
+    image: minio/minio:latest
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    volumes:
+      - minio-data:/minio
+    command: server ~/minio --console-address :9090
+    healthcheck:
+      test: ["CMD", "curl", "-I", "${HOST}:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 volumes:
   pgdata:
+  minio-data:
