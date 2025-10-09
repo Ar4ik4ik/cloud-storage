@@ -45,7 +45,6 @@ logging:
     org.springframework.data.redis: DEBUG
 minio:
   url: http://${HOST}:9000
-  access-key: ${MINIO_ACCESS_KEY}
-  secret-key: ${MINIO_SECRET_KEY}
-  bucket:
-    name: user-files
+  accessKey: ${MINIO_ACCESS_KEY}
+  secretKey: ${MINIO_SECRET_KEY}
+  bucket: user-files

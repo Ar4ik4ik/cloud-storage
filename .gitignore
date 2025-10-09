@@ -36,3 +36,10 @@ build/
 /redisdata/appendonlydir/appendonly.aof.1.incr.aof
 /redisdata/appendonlydir/appendonly.aof.manifest
 /redisdata/dump.rdb
+/data/.minio.sys/buckets/.usage.json/xl.meta
+/data/.minio.sys/tmp/3f3f93e4-a928-4edc-b4ad-20214843b612
+/data/.minio.sys/format.json
+/data/.minio.sys/buckets/.bloomcycle.bin/xl.meta
+/data/.minio.sys/config/config.json/xl.meta
+/data/.minio.sys/config/iam/format.json/xl.meta
+/data/.minio.sys/pool.bin/xl.meta
