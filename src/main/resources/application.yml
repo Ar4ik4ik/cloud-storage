@@ -49,7 +49,7 @@ logging:
     org.springframework.session: DEBUG
     org.springframework.data.redis: DEBUG
 minio:
-  url: http://${HOST}:9000
-  accessKey: ${MINIO_ACCESS_KEY}
-  secretKey: ${MINIO_SECRET_KEY}
+  url: http://localhost:9000
+  accessKey: cloud-storage-application
+  secretKey: cloud-storage-application
   bucket: user-files

@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 
 @Configuration
-@RequiredArgsConstructor(onConstructor = @__(@Lazy))
+@RequiredArgsConstructor (onConstructor = @__(@Lazy))
 public class ApplicationConfig {
 
     private final MinioProperties minioProperties;
