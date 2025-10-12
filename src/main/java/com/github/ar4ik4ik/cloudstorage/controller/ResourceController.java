@@ -1,15 +1,22 @@
 package com.github.ar4ik4ik.cloudstorage.controller;
 
-import org.springframework.data.repository.query.Param;
+import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
+import com.github.ar4ik4ik.cloudstorage.service.impl.StorageServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URI;
+import java.util.List;
+
 @RequestMapping("/api/resource")
 @RestController
+@RequiredArgsConstructor
 public class ResourceController {
+
+    private final StorageServiceImpl storageService;
 
     @GetMapping(params = "path")
     public ResponseEntity<?> getResourceInfo(@RequestParam(name = "path") String resourcePath) {
@@ -38,9 +45,11 @@ public class ResourceController {
         return null;
     }
 
-    @PostMapping(params = {"path", "file"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> uploadResource(@RequestParam(name = "path") String resourcePath,
-                                            @RequestPart(name = "file") MultipartFile multipartFile) {
-        return null;
+    @PostMapping
+    public ResponseEntity<List<ResourceInfoResponseDto>> uploadResource(
+            @RequestParam(name = "path") String resourcePath,
+            @RequestParam(name = "files") MultipartFile[] files) {
+        return ResponseEntity.created(URI.create(resourcePath))
+                .body(storageService.uploadResource(files, resourcePath));
     }
 }
