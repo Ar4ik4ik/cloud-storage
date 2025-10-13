@@ -16,6 +16,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -30,6 +31,16 @@ public class StorageServiceImpl implements StorageService {
 
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
+
+    @Override
+    public List<DirectoryInfoResponseDto> getDirectoryInfo(String directoryPath) {
+        return List.of();
+    }
+
+    @Override
+    public List<DirectoryInfoResponseDto> createDirectory(String directoryPath) {
+        return List.of();
+    }
 
     @Override
     public ResourceInfoResponseDto getResourceInfo(String resourcePath) {
@@ -84,7 +95,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     private void addFileToStorage(ResourceInfo resourceInfo, List<ResourceInfoResponseDto> uploadedResources) throws IOException, ErrorResponseException, InsufficientDataException, InternalException, InvalidKeyException, InvalidResponseException, NoSuchAlgorithmException, ServerException, XmlParserException {
-        try (var inputStream = resourceInfo.getMultipartFile().getInputStream()) {
+        try (var inputStream = new BufferedInputStream(resourceInfo.getMultipartFile().getInputStream())) {
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(minioProperties.getBucket())
                     .object(resourceInfo.getFullMinioPath())
@@ -136,15 +147,5 @@ public class StorageServiceImpl implements StorageService {
             return pathWithoutTrailingSlash.substring(0, lastSlashIdx + 1);
         }
         return "/";
-    }
-
-    @Override
-    public List<DirectoryInfoResponseDto> getDirectoryInfo(String directoryPath) {
-        return List.of();
-    }
-
-    @Override
-    public List<DirectoryInfoResponseDto> createDirectory(String directoryPath) {
-        return List.of();
     }
 }
