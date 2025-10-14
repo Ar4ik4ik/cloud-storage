@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.net.URI;
 import java.util.List;
@@ -30,7 +31,7 @@ public class ResourceController {
     }
 
     @GetMapping(path = "download", params = "path", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<?> downloadResource() {
+    public ResponseEntity<StreamingResponseBody> downloadResource() {
         return null;
     }
 
