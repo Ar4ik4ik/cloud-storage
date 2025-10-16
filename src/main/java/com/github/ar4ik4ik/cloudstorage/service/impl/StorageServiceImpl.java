@@ -2,35 +2,33 @@ package com.github.ar4ik4ik.cloudstorage.service.impl;
 
 import com.github.ar4ik4ik.cloudstorage.dto.DirectoryInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
-import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType;
-import com.github.ar4ik4ik.cloudstorage.props.MinioProperties;
+import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
 import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.errors.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.core.io.ByteArrayResource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.nio.file.Paths;
+import java.util.*;
 
+import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
+import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.FILE;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StorageServiceImpl implements StorageService {
 
-    private final MinioClient minioClient;
-    private final MinioProperties minioProperties;
+    private final DirectoryDownloadStrategy directoryDownloadStrategy;
+    private final FileDownloadStrategy fileDownloadStrategy;
+
+    private final S3Repository repository;
 
     @Override
     public List<DirectoryInfoResponseDto> getDirectoryInfo(String directoryPath) {
@@ -52,8 +50,13 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public ByteArrayResource downloadResource(String resourcePath) {
-        return null;
+    public StreamingResponseBody downloadResource(String resourcePath) {
+        String normalizedOriginalResourcePath = Paths.get(resourcePath).normalize().toString();
+
+        // TODO: think about extend checking directory or not with tag comparing (if suffix "/" always mean directory - don't need it)
+        // TODO: exception handling keyDoesNotExistsException
+        return resourcePath.endsWith("/") ? directoryDownloadStrategy.download(normalizedOriginalResourcePath)
+                : fileDownloadStrategy.download(normalizedOriginalResourcePath);
     }
 
     @Override
@@ -74,60 +77,54 @@ public class StorageServiceImpl implements StorageService {
     @SneakyThrows
     @Override
     public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, String resourcePath) {
-        String normalizedResourcePath = normalizePath(resourcePath);
-        Set<String> createdDirectories = new HashSet<>();
+        String normalizedOriginalResourcePath = Paths.get(resourcePath).normalize().toString();
         List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
+        // if already exist do nothing, same logic if no directories in the path
+        addDirectoriesToStorageRecursive(normalizedOriginalResourcePath, uploadedResources);
 
         for (MultipartFile file : files) {
-            ResourceInfo resourceInfo = ResourceInfo.create(normalizedResourcePath, file);
-            addDirectoryToStorage(resourceInfo.getDirectoryPathForFile(), createdDirectories, uploadedResources);
+            ResourceInfo resourceInfo = ResourceInfo.create(resourcePath, file);
             addFileToStorage(resourceInfo, uploadedResources);
         }
         return uploadedResources;
     }
 
-    @NotNull
-    private static String normalizePath(String resourcePath) {
-        if (!resourcePath.endsWith("/")) {
-            resourcePath += "/";
-        }
-        return resourcePath;
-    }
-
-    private void addFileToStorage(ResourceInfo resourceInfo, List<ResourceInfoResponseDto> uploadedResources) throws IOException, ErrorResponseException, InsufficientDataException, InternalException, InvalidKeyException, InvalidResponseException, NoSuchAlgorithmException, ServerException, XmlParserException {
+    private void addFileToStorage(ResourceInfo resourceInfo, List<ResourceInfoResponseDto> uploadedResources) throws IOException {
         try (var inputStream = new BufferedInputStream(resourceInfo.getMultipartFile().getInputStream())) {
-            minioClient.putObject(PutObjectArgs.builder()
-                    .bucket(minioProperties.getBucket())
-                    .object(resourceInfo.getFullMinioPath())
-                    .contentType(resourceInfo.getMultipartFile().getContentType())
-                    .stream(inputStream, resourceInfo.getMultipartFile().getSize(), -1)
-                    .build());
+            // TODO: need keyAlreadyExist exception catching
+            repository.uploadObject(resourceInfo.getFullMinioPath(),
+                    resourceInfo.getMultipartFile().getContentType(),
+                    inputStream,
+                    resourceInfo.getMultipartFile().getSize());
 
             uploadedResources.add(ResourceInfoResponseDto.builder()
                     .name(resourceInfo.getFilename())
                     .path(resourceInfo.getDirectoryPathForFile())
                     .size(resourceInfo.getMultipartFile().getSize())
-                    .type(ResourceType.FILE.name())
+                    .type(FILE.name())
                     .build());
         }
     }
 
-    private void addDirectoryToStorage(String directoryPathForFile, Set<String> createdDirectories,
-                                       List<ResourceInfoResponseDto> uploadedResources) {
-        String[] directories = directoryPathForFile.split("/");
+    private void addDirectoriesToStorageRecursive(String directoryPathForFile, List<ResourceInfoResponseDto> uploadedResources) {
 
+        Set<String> createdDirectories = new HashSet<>();
+        String[] directories = directoryPathForFile.split("/");
         String currentDirectory = "";
+        log.info("directories={}", Arrays.stream(directories).toList());
 
         for (String directory : directories) {
             if (!directory.isEmpty()) {
                 currentDirectory = currentDirectory.concat(directory).concat("/");
                 if (!createdDirectories.contains(directory)) {
+                    repository.createEmptyDirectory(currentDirectory); // TODO: need keyAlreadyExistException handling if directory already exists
+
                     uploadedResources.add(ResourceInfoResponseDto.builder()
                             .name(directory)
                             .path(getParentPath(currentDirectory))
                             .name(directory)
-                            .size(null)
-                            .type(ResourceType.DIRECTORY.name())
+                            .size(0L) // directories always would be with type=application/x-directory and size=0 (S3 specifically logic)
+                            .type(DIRECTORY.name())
                             .build());
                     createdDirectories.add(directory);
                 }

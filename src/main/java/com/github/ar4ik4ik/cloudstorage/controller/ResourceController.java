@@ -2,7 +2,9 @@ package com.github.ar4ik4ik.cloudstorage.controller;
 
 import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.service.impl.StorageServiceImpl;
+import com.github.ar4ik4ik.cloudstorage.utils.ResourceUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +32,16 @@ public class ResourceController {
                 .noContent().build();
     }
 
-    @GetMapping(path = "download", params = "path", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<StreamingResponseBody> downloadResource() {
-        return null;
+    @GetMapping(path = "download")
+    public ResponseEntity<StreamingResponseBody> downloadResource(@RequestParam(name = "path") String resourcePath) {
+
+        String filename = ResourceUtils.getFilename(resourcePath);
+
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''%s".formatted(filename))
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(storageService.downloadResource(resourcePath));
     }
 
     @GetMapping(path = "move", params = {"from", "to"})

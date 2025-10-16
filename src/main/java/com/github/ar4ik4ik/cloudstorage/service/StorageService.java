@@ -2,8 +2,8 @@ package com.github.ar4ik4ik.cloudstorage.service;
 
 import com.github.ar4ik4ik.cloudstorage.dto.DirectoryInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ public interface StorageService {
 
     void deleteResource(String resourcePath);
 
-    ByteArrayResource downloadResource(String resourcePath);
+    StreamingResponseBody downloadResource(String resourcePath);
 
     ResourceInfoResponseDto moveResource(String from, String to);
 
