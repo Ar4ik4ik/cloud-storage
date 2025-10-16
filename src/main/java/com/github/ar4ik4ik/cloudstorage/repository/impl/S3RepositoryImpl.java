@@ -2,21 +2,24 @@ package com.github.ar4ik4ik.cloudstorage.repository.impl;
 
 import com.github.ar4ik4ik.cloudstorage.exception.StorageException;
 import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
-import io.minio.GetObjectArgs;
-import io.minio.GetObjectResponse;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
+import io.minio.*;
 import io.minio.errors.MinioException;
+import io.minio.messages.Item;
 import io.minio.messages.Tags;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 
 import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
 import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.FILE;
@@ -38,7 +41,7 @@ public class S3RepositoryImpl implements S3Repository {
                     .object(path)
                     .contentType(contentType)
                     .stream(inputStream, objectSize, -1)
-                            .tags(Map.of("type", FILE.name()))
+                    .tags(Map.of("type", FILE.name()))
                     .build());
         } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
             throw new StorageException("Failed to upload data in storage, input data: path={%s}, contentType={%s}. Cause: %s"
@@ -63,14 +66,36 @@ public class S3RepositoryImpl implements S3Repository {
     public void createEmptyDirectory(String path) throws StorageException {
         try {
             minioClient.putObject(PutObjectArgs.builder()
-                            .bucket(bucket)
-                            .object(path)
-                            .contentType("application/x-directory")
-                            .tags(Tags.newObjectTags(Map.of("type", DIRECTORY.name())))
+                    .bucket(bucket)
+                    .object(path)
+                    .contentType("application/x-directory")
+                    .tags(Tags.newObjectTags(Map.of("type", DIRECTORY.name())))
+                    .stream(new ByteArrayInputStream(new byte[0]), 0, -1)
                     .build());
         } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
             throw new StorageException("Failed to upload data in storage, input data: key={%s}, contentType={%s}. Cause: %s"
                     .formatted(path, "application/x-directory", e.getMessage()));
         }
+    }
+
+    @Override
+    public List<Item> getListObjectsByPath(String path) throws StorageException {
+        var storageObjectsIterator = minioClient.listObjects(ListObjectsArgs.builder()
+                .bucket(bucket)
+                .prefix(path)
+                .recursive(true)
+                .delimiter("/")
+                .build()).iterator();
+
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(storageObjectsIterator, Spliterator.ORDERED), false)
+                .map(item -> {
+                    try {
+                        return item.get();
+                    } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+                        throw new StorageException("Failed to get data from storage, input data: key={%s}. Cause: %s"
+                                .formatted(path, e.getMessage()));
+                    }
+                })
+                .toList();
     }
 }

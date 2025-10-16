@@ -36,7 +36,8 @@ spring:
       namespace: spring:session
   servlet:
     multipart:
-      max-file-size: 100MB
+      max-file-size: 2GB
+      max-request-size: 2GB
   jackson:
     default-property-inclusion: non_null
 server:

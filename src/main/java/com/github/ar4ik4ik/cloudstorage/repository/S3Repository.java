@@ -2,8 +2,10 @@ package com.github.ar4ik4ik.cloudstorage.repository;
 
 import com.github.ar4ik4ik.cloudstorage.exception.StorageException;
 import io.minio.GetObjectResponse;
+import io.minio.messages.Item;
 
 import java.io.InputStream;
+import java.util.List;
 
 public interface S3Repository {
 
@@ -12,4 +14,6 @@ public interface S3Repository {
     GetObjectResponse getObject(String path) throws StorageException;
 
     void createEmptyDirectory(String path) throws StorageException;
+
+    List<Item> getListObjectsByPath(String path) throws StorageException;
 }
