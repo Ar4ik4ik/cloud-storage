@@ -21,12 +21,12 @@ public class ResourceController {
 
     private final StorageServiceImpl storageService;
 
-    @GetMapping(params = "path")
+    @GetMapping
     public ResponseEntity<?> getResourceInfo(@RequestParam(name = "path") String resourcePath) {
         return null;
     }
 
-    @DeleteMapping(params = "path")
+    @DeleteMapping
     public ResponseEntity<?> deleteResource(@RequestParam(name = "path") String resourcePath) {
         return ResponseEntity
                 .noContent().build();
@@ -34,9 +34,7 @@ public class ResourceController {
 
     @GetMapping(path = "download")
     public ResponseEntity<StreamingResponseBody> downloadResource(@RequestParam(name = "path") String resourcePath) {
-
         String filename = ResourceUtils.getFilename(resourcePath);
-
         return ResponseEntity
                 .ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''%s".formatted(filename))
@@ -44,13 +42,13 @@ public class ResourceController {
                 .body(storageService.downloadResource(resourcePath));
     }
 
-    @GetMapping(path = "move", params = {"from", "to"})
+    @GetMapping(path = "move")
     public ResponseEntity<?> moveResource(@RequestParam(name = "from") String moveFrom,
                                           @RequestParam(name = "to") String moveTo) {
         return null;
     }
 
-    @GetMapping(path = "search", params = "query")
+    @GetMapping(path = "search")
     public ResponseEntity<?> searchResource(@RequestParam(name = "query") String searchQuery) {
         return null;
     }

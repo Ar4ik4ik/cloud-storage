@@ -1,4 +1,4 @@
-package com.github.ar4ik4ik.cloudstorage.entity;
+package com.github.ar4ik4ik.cloudstorage.model.entity;
 
 
 import jakarta.persistence.*;

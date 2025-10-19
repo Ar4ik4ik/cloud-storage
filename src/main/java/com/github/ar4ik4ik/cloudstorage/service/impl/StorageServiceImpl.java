@@ -25,8 +25,8 @@ import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.Resou
 @RequiredArgsConstructor
 public class StorageServiceImpl implements StorageService {
 
-    private final DirectoryDownloadStrategy directoryDownloadStrategy;
-    private final FileDownloadStrategy fileDownloadStrategy;
+    private final DirectoryDownloadStrategyImpl directoryDownloadStrategyImpl;
+    private final FileDownloadStrategyImpl fileDownloadStrategyImpl;
 
     private final S3Repository repository;
 
@@ -55,8 +55,8 @@ public class StorageServiceImpl implements StorageService {
 
         // TODO: think about extend checking directory or not with tag comparing (if suffix "/" always mean directory - don't need it)
         // TODO: exception handling keyDoesNotExistsException
-        return resourcePath.endsWith("/") ? directoryDownloadStrategy.download(normalizedOriginalResourcePath)
-                : fileDownloadStrategy.download(normalizedOriginalResourcePath);
+        return resourcePath.endsWith("/") ? directoryDownloadStrategyImpl.download(normalizedOriginalResourcePath)
+                : fileDownloadStrategyImpl.download(normalizedOriginalResourcePath);
     }
 
     @Override

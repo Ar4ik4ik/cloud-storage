@@ -1,11 +1,12 @@
 package com.github.ar4ik4ik.cloudstorage.service;
 
 import com.github.ar4ik4ik.cloudstorage.controller.UserCreateDto;
-import com.github.ar4ik4ik.cloudstorage.entity.Authority;
-import com.github.ar4ik4ik.cloudstorage.entity.AuthorityType;
-import com.github.ar4ik4ik.cloudstorage.entity.User;
+import com.github.ar4ik4ik.cloudstorage.model.entity.Authority;
+import com.github.ar4ik4ik.cloudstorage.model.AuthorityType;
+import com.github.ar4ik4ik.cloudstorage.model.entity.User;
 import com.github.ar4ik4ik.cloudstorage.repository.AuthorityRepository;
 import com.github.ar4ik4ik.cloudstorage.repository.UserRepository;
+import com.github.ar4ik4ik.cloudstorage.service.impl.DatabaseUserDetailsServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +40,7 @@ public class DatabaseUserDetailsServiceTest {
     private AuthorityRepository authorityRepository;
 
     @InjectMocks
-    private DatabaseUserDetailsService databaseUserDetailsService;
+    private DatabaseUserDetailsServiceImpl databaseUserDetailsServiceImpl;
 
     @Test
     @DisplayName("Returns userDetails object when username is exists")
@@ -60,7 +61,7 @@ public class DatabaseUserDetailsServiceTest {
 
         // when
         when(userRepository.findUserByUsername(username)).thenReturn(Optional.of(user));
-        UserDetails userDetails = databaseUserDetailsService.loadUserByUsername(username);
+        UserDetails userDetails = databaseUserDetailsServiceImpl.loadUserByUsername(username);
 
         // then
         var expectedAuthorities = List.of(new SimpleGrantedAuthority(AuthorityType.ROLE_USER.getAuthority()));
@@ -83,7 +84,7 @@ public class DatabaseUserDetailsServiceTest {
 
         // then
         assertThrows(UsernameNotFoundException.class,
-                () -> databaseUserDetailsService.loadUserByUsername(notExistingUsername));
+                () -> databaseUserDetailsServiceImpl.loadUserByUsername(notExistingUsername));
 
         verify(userRepository).findUserByUsername(notExistingUsername);
     }
@@ -109,7 +110,7 @@ public class DatabaseUserDetailsServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        databaseUserDetailsService.processUserRegister(userCreateDto);
+        databaseUserDetailsServiceImpl.processUserRegister(userCreateDto);
 
         // then
         verify(passwordEncoder, times(1)).encode(eq(rawPassword));

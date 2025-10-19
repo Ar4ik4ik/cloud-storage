@@ -19,7 +19,7 @@ import java.util.zip.ZipOutputStream;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DirectoryDownloadStrategy implements DownloadStrategy {
+public class DirectoryDownloadStrategyImpl implements DownloadStrategy {
 
     private final S3Repository repository;
 

@@ -1,5 +1,6 @@
-package com.github.ar4ik4ik.cloudstorage.entity;
+package com.github.ar4ik4ik.cloudstorage.model.entity;
 
+import com.github.ar4ik4ik.cloudstorage.model.AuthorityType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

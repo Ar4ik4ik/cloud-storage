@@ -1,8 +1,8 @@
-package com.github.ar4ik4ik.cloudstorage.service;
+package com.github.ar4ik4ik.cloudstorage.service.impl;
 
 import com.github.ar4ik4ik.cloudstorage.controller.UserCreateDto;
-import com.github.ar4ik4ik.cloudstorage.entity.Authority;
-import com.github.ar4ik4ik.cloudstorage.entity.AuthorityType;
+import com.github.ar4ik4ik.cloudstorage.model.entity.Authority;
+import com.github.ar4ik4ik.cloudstorage.model.AuthorityType;
 import com.github.ar4ik4ik.cloudstorage.repository.AuthorityRepository;
 import com.github.ar4ik4ik.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DatabaseUserDetailsService implements UserDetailsService {
+public class DatabaseUserDetailsServiceImpl implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
@@ -43,7 +43,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
     @Transactional
     public void processUserRegister(UserCreateDto userCreateDto) {
-        this.userRepository.save(com.github.ar4ik4ik.cloudstorage.entity.User.builder()
+        this.userRepository.save(com.github.ar4ik4ik.cloudstorage.model.entity.User.builder()
                         .username(userCreateDto.username())
                         .password(passwordEncoder.encode(userCreateDto.password()))
                         .authorities(List.of(

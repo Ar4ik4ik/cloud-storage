@@ -1,8 +1,8 @@
 package com.github.ar4ik4ik.cloudstorage.controller;
 
-import com.github.ar4ik4ik.cloudstorage.entity.User;
+import com.github.ar4ik4ik.cloudstorage.model.entity.User;
 import com.github.ar4ik4ik.cloudstorage.repository.UserRepository;
-import com.github.ar4ik4ik.cloudstorage.service.DatabaseUserDetailsService;
+import com.github.ar4ik4ik.cloudstorage.service.impl.DatabaseUserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import java.util.List;
 public class UserRestController {
 
     private final UserRepository userRepository;
-    private final DatabaseUserDetailsService databaseUserDetailsService;
+    private final DatabaseUserDetailsServiceImpl databaseUserDetailsServiceImpl;
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
@@ -25,7 +25,7 @@ public class UserRestController {
 
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody UserCreateDto userCreateDto) {
-        databaseUserDetailsService.processUserRegister(userCreateDto);
+        databaseUserDetailsServiceImpl.processUserRegister(userCreateDto);
         return ResponseEntity.noContent().build();
     }
 }

@@ -15,6 +15,15 @@ services:
 #      - SPRING_DATA_REDIS_HOST=redis
 #    ports:
 #      - '8080:8080'
+  frontend:
+    build:
+      context: ../cloud-storage-frontend
+      dockerfile: Dockerfile
+    container_name: cloud-storage-frontend
+    env_file:
+      - ../cloud-storage-frontend/.env
+    ports:
+      - '8090:80'
   db:
     image: 'postgres:18'
     ports:
