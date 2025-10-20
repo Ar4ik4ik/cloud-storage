@@ -28,6 +28,7 @@ public class ResourceController {
 
     @DeleteMapping
     public ResponseEntity<?> deleteResource(@RequestParam(name = "path") String resourcePath) {
+        storageService.deleteResource(resourcePath);
         return ResponseEntity
                 .noContent().build();
     }

@@ -4,8 +4,8 @@ import com.github.ar4ik4ik.cloudstorage.dto.DirectoryInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
+import com.github.ar4ik4ik.cloudstorage.utils.PathUtils;
 import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
-import io.minio.ObjectWriteResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,6 @@ import java.util.*;
 
 import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
 import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.FILE;
-import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getDirectoryFromFullPath;
 import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getParentPath;
 
 @Slf4j
@@ -50,6 +49,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public void deleteResource(String resourcePath) {
+        repository.removeObject(resourcePath, isFolder(resourcePath));
     }
 
     @Override
