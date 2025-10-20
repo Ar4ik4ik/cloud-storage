@@ -76,11 +76,6 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public ResourceInfoResponseDto renameResource(String resourcePath, String newResourceName) {
-        return null;
-    }
-
-    @Override
     public List<ResourceInfoResponseDto> searchResourcesByQuery(String query) {
         return List.of();
     }
