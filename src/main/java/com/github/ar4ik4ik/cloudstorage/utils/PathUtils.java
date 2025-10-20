@@ -33,7 +33,8 @@ public class PathUtils {
         return "/";
     }
 
-    public static String getDirectoryFromFullPath(String fullDirectoryPath) {
-        return Paths.get(fullDirectoryPath).getFileName().toString().concat("/");
+    public static String getNameFromFullPath(String fullDirectoryPath) {
+        String filename = Paths.get(fullDirectoryPath).getFileName().toString();
+        return fullDirectoryPath.endsWith("/") ? filename.concat("/") : filename;
     }
 }

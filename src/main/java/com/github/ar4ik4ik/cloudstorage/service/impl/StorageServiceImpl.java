@@ -64,24 +64,15 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public ResourceInfoResponseDto moveResource(String from, String to) {
-        List<ObjectWriteResponse> movedObjects;
-
-        if (isFolder(from)) {
-            repository.copyObject(from, to, true);
-            repository.removeObject(from, true);
-            return ResourceInfoResponseDto.builder()
-                    .path(to)
-                    .name(getDirectoryFromFullPath(from))
-                    .type(DIRECTORY.name())
-                    .build();
-        } else {
-            repository.copyObject(from, to, false);
-            repository.removeObject(from, false);
-            return ResourceInfoResponseDto.builder()
-                    .path(to)
-                    .name(getDirectoryFromFullPath(from))
-                    .type(FILE.name())
-                    .build();}
+        boolean folder = isFolder(from);
+        repository.copyObject(from, to, folder);
+        repository.removeObject(from, folder);
+        return ResourceInfoResponseDto.builder()
+                .name(PathUtils.getNameFromFullPath(from))
+                .path(to)
+                .type(folder ? DIRECTORY.name() : FILE.name())
+                .size(folder ? getBytesCount(to) : null)
+                .build();
     }
 
     @Override
@@ -150,6 +141,10 @@ public class StorageServiceImpl implements StorageService {
                 }
             }
         }
+    }
+
+    private long getBytesCount(String filePath) {
+        return repository.getObject(filePath).headers().byteCount();
     }
 
     private boolean isFolder(String from) {
