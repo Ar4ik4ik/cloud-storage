@@ -1,7 +1,7 @@
 package com.github.ar4ik4ik.cloudstorage.repository;
 
-import com.github.ar4ik4ik.cloudstorage.model.entity.Authority;
 import com.github.ar4ik4ik.cloudstorage.model.AuthorityType;
+import com.github.ar4ik4ik.cloudstorage.model.entity.Authority;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

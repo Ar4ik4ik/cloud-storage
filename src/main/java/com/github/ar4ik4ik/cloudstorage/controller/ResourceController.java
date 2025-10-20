@@ -2,7 +2,7 @@ package com.github.ar4ik4ik.cloudstorage.controller;
 
 import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.service.impl.StorageServiceImpl;
-import com.github.ar4ik4ik.cloudstorage.utils.ResourceUtils;
+import com.github.ar4ik4ik.cloudstorage.utils.PathUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -34,7 +34,7 @@ public class ResourceController {
 
     @GetMapping(path = "download")
     public ResponseEntity<StreamingResponseBody> downloadResource(@RequestParam(name = "path") String resourcePath) {
-        String filename = ResourceUtils.getFilename(resourcePath);
+        String filename = PathUtils.getFilenameForDownload(resourcePath);
         return ResponseEntity
                 .ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''%s".formatted(filename))
@@ -43,9 +43,12 @@ public class ResourceController {
     }
 
     @GetMapping(path = "move")
-    public ResponseEntity<?> moveResource(@RequestParam(name = "from") String moveFrom,
+    public ResponseEntity<ResourceInfoResponseDto> moveResource(@RequestParam(name = "from") String moveFrom,
                                           @RequestParam(name = "to") String moveTo) {
-        return null;
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(storageService.moveResource(moveFrom, moveTo));
+
     }
 
     @GetMapping(path = "search")

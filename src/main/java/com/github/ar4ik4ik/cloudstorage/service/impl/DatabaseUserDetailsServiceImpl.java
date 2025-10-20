@@ -1,8 +1,8 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
 import com.github.ar4ik4ik.cloudstorage.controller.UserCreateDto;
-import com.github.ar4ik4ik.cloudstorage.model.entity.Authority;
 import com.github.ar4ik4ik.cloudstorage.model.AuthorityType;
+import com.github.ar4ik4ik.cloudstorage.model.entity.Authority;
 import com.github.ar4ik4ik.cloudstorage.repository.AuthorityRepository;
 import com.github.ar4ik4ik.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

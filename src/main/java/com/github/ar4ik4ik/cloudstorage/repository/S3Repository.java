@@ -16,4 +16,8 @@ public interface S3Repository {
     void createEmptyDirectory(String path) throws StorageException;
 
     List<Item> getListObjectsByPath(String path) throws StorageException;
+
+    void copyObject(String from, String to, boolean isFolder) throws StorageException;
+
+    void removeObject(String path, boolean isFolder) throws StorageException;
 }

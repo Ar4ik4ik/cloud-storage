@@ -5,6 +5,7 @@ import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
 import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
+import io.minio.ObjectWriteResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,8 @@ import java.util.*;
 
 import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
 import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.FILE;
+import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getDirectoryFromFullPath;
+import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getParentPath;
 
 @Slf4j
 @Service
@@ -61,7 +64,24 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public ResourceInfoResponseDto moveResource(String from, String to) {
-        return null;
+        List<ObjectWriteResponse> movedObjects;
+
+        if (isFolder(from)) {
+            repository.copyObject(from, to, true);
+            repository.removeObject(from, true);
+            return ResourceInfoResponseDto.builder()
+                    .path(to)
+                    .name(getDirectoryFromFullPath(from))
+                    .type(DIRECTORY.name())
+                    .build();
+        } else {
+            repository.copyObject(from, to, false);
+            repository.removeObject(from, false);
+            return ResourceInfoResponseDto.builder()
+                    .path(to)
+                    .name(getDirectoryFromFullPath(from))
+                    .type(FILE.name())
+                    .build();}
     }
 
     @Override
@@ -132,17 +152,7 @@ public class StorageServiceImpl implements StorageService {
         }
     }
 
-    private String getParentPath(String fullDirectoryPath) {
-        if (fullDirectoryPath == null || fullDirectoryPath.isEmpty() || fullDirectoryPath.equals("/")) {
-            return "/";
-        }
-        String pathWithoutTrailingSlash = fullDirectoryPath.endsWith("/")
-                ? fullDirectoryPath.substring(0, fullDirectoryPath.length() - 1)
-                : fullDirectoryPath;
-        int lastSlashIdx = pathWithoutTrailingSlash.lastIndexOf("/");
-        if (lastSlashIdx != -1) {
-            return pathWithoutTrailingSlash.substring(0, lastSlashIdx + 1);
-        }
-        return "/";
+    private boolean isFolder(String from) {
+        return from.endsWith("/");
     }
 }
