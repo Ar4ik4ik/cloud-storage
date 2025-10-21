@@ -22,8 +22,8 @@ public class ResourceController {
     private final StorageServiceImpl storageService;
 
     @GetMapping
-    public ResponseEntity<?> getResourceInfo(@RequestParam(name = "path") String resourcePath) {
-        return null;
+    public ResponseEntity<ResourceInfoResponseDto> getResourceInfo(@RequestParam(name = "path") String resourcePath) {
+        return ResponseEntity.ok(storageService.getResourceInfo(resourcePath));
     }
 
     @DeleteMapping

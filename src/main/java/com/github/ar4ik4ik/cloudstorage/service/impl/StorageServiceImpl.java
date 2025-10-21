@@ -33,8 +33,15 @@ public class StorageServiceImpl implements StorageService {
     private final S3Repository repository;
 
     @Override
-    public List<DirectoryInfoResponseDto> getDirectoryInfo(String directoryPath) {
-        return List.of();
+        public List<ResourceInfoResponseDto> getDirectoryInfo(String directoryPath) {
+        return repository.getListObjectsByPath(directoryPath, false)
+                .stream()
+                .map(obj -> ResourceInfoResponseDto.builder()
+                        .path(getParentPath(obj.objectName()))
+                        .name(getNameFromFullPath(obj.objectName()))
+                        .size(obj.size())
+                        .type(obj.isDir() ? DIRECTORY.name() : FILE.name())
+                        .build()).toList();
     }
 
     @Override
@@ -44,7 +51,16 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public ResourceInfoResponseDto getResourceInfo(String resourcePath) {
-        return null;
+        try (var obj = repository.getObject(resourcePath)) {
+            return ResourceInfoResponseDto.builder()
+                    .name(PathUtils.getNameFromFullPath(resourcePath))
+                    .size(obj.headers().byteCount())
+                    .type(FILE.name())
+                    .path(PathUtils.getParentPath(resourcePath))
+                    .build();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

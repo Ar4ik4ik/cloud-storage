@@ -21,7 +21,7 @@ public interface StorageService {
 
     List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, String resourcePath);
 
-    List<DirectoryInfoResponseDto> getDirectoryInfo(String directoryPath);
+    List<ResourceInfoResponseDto> getDirectoryInfo(String directoryPath);
 
     List<DirectoryInfoResponseDto> createDirectory(String directoryPath);
 }

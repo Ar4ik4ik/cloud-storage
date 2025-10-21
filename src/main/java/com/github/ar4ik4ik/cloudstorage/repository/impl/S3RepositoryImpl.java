@@ -84,11 +84,12 @@ public class S3RepositoryImpl implements S3Repository {
     }
 
     @Override
-    public List<Item> getListObjectsByPath(String path) throws StorageException {
+    public List<Item> getListObjectsByPath(String path, boolean recursive) throws StorageException {
         var storageObjectsIterator = minioClient.listObjects(ListObjectsArgs.builder()
                 .bucket(bucket)
+                .startAfter(path)
                 .prefix(path)
-                .recursive(true)
+                .recursive(recursive)
                 .build()).iterator();
 
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(storageObjectsIterator, Spliterator.ORDERED), false)
@@ -136,7 +137,7 @@ public class S3RepositoryImpl implements S3Repository {
     }
 
     private void removeFolder(String path) {
-        List<DeleteObject> storageObjectsToRemove = getListObjectsByPath(path).stream()
+        List<DeleteObject> storageObjectsToRemove = getListObjectsByPath(path, true).stream()
                 .map(object -> new DeleteObject(object.objectName()))
                 .toList();
         if (storageObjectsToRemove.isEmpty()) {
@@ -176,7 +177,7 @@ public class S3RepositoryImpl implements S3Repository {
     }
 
     private void copyFolder(String from, String to) {
-        List<Item> storageObjects = getListObjectsByPath(from);
+        List<Item> storageObjects = getListObjectsByPath(from, true);
         storageObjects.forEach(object -> {
             try {
                 minioClient.copyObject(CopyObjectArgs.builder()

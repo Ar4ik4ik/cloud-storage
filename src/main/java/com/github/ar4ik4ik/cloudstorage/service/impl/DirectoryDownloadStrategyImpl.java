@@ -26,7 +26,7 @@ public class DirectoryDownloadStrategyImpl implements DownloadStrategy {
     @Override
     public StreamingResponseBody download(String resourcePath) {
         return outputStream -> {
-            var storageItems = repository.getListObjectsByPath(resourcePath);
+            var storageItems = repository.getListObjectsByPath(resourcePath, true);
 
             try (ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(outputStream))) {
                 for (Item item: storageItems) {
