@@ -22,7 +22,8 @@ public class DirectoryController {
     }
 
     @PostMapping(params = "path")
-    public ResponseEntity<?> createDirectory(@RequestParam(name = "path") String directoryPath) {
-        return null;
+    public ResponseEntity<ResourceInfoResponseDto> createDirectory(@RequestParam(name = "path") String directoryPath) {
+        return ResponseEntity.created(URI.create(directoryPath))
+                .body(service.createDirectory(directoryPath));
     }
 }

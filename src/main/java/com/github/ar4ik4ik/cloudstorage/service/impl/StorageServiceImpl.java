@@ -1,6 +1,5 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
-import com.github.ar4ik4ik.cloudstorage.dto.DirectoryInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
@@ -20,6 +19,7 @@ import java.util.*;
 
 import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
 import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.FILE;
+import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getNameFromFullPath;
 import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getParentPath;
 
 @Slf4j
@@ -45,8 +45,13 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public List<DirectoryInfoResponseDto> createDirectory(String directoryPath) {
-        return List.of();
+    public ResourceInfoResponseDto createDirectory(String directoryPath) {
+        repository.createEmptyDirectory(directoryPath);
+        return ResourceInfoResponseDto.builder()
+                .name(getNameFromFullPath(directoryPath))
+                .path(getParentPath(directoryPath))
+                .type(DIRECTORY.name())
+                .build();
     }
 
     @Override

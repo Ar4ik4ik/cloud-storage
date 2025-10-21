@@ -1,6 +1,5 @@
 package com.github.ar4ik4ik.cloudstorage.service;
 
-import com.github.ar4ik4ik.cloudstorage.dto.DirectoryInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -23,5 +22,5 @@ public interface StorageService {
 
     List<ResourceInfoResponseDto> getDirectoryInfo(String directoryPath);
 
-    List<DirectoryInfoResponseDto> createDirectory(String directoryPath);
+    ResourceInfoResponseDto createDirectory(String directoryPath);
 }
