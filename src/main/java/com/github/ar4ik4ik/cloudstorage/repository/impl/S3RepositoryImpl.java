@@ -87,7 +87,6 @@ public class S3RepositoryImpl implements S3Repository {
     public List<Item> getListObjectsByPath(String path, boolean recursive) throws StorageException {
         var storageObjectsIterator = minioClient.listObjects(ListObjectsArgs.builder()
                 .bucket(bucket)
-                .startAfter(path)
                 .prefix(path)
                 .recursive(recursive)
                 .build()).iterator();
@@ -95,6 +94,7 @@ public class S3RepositoryImpl implements S3Repository {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(storageObjectsIterator, Spliterator.ORDERED), false)
                 .map(item -> {
                     try {
+                        log.info("item=={}", item);
                         return item.get();
                     } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
                         throw new StorageException("Failed to get data from storage, input data: key={%s}. Cause: %s"

@@ -48,12 +48,11 @@ public class ResourceController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(storageService.moveResource(moveFrom, moveTo));
-
     }
 
     @GetMapping(path = "search")
     public ResponseEntity<?> searchResource(@RequestParam(name = "query") String searchQuery) {
-        return null;
+        return ResponseEntity.ok(storageService.searchResourcesByQuery(searchQuery));
     }
 
     @PostMapping

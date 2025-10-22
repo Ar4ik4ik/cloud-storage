@@ -3,7 +3,6 @@ package com.github.ar4ik4ik.cloudstorage.service.impl;
 import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
-import com.github.ar4ik4ik.cloudstorage.utils.PathUtils;
 import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -19,8 +18,7 @@ import java.util.*;
 
 import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
 import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.FILE;
-import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getNameFromFullPath;
-import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getParentPath;
+import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.*;
 
 @Slf4j
 @Service
@@ -38,17 +36,18 @@ public class StorageServiceImpl implements StorageService {
                 .stream()
                 .map(obj -> ResourceInfoResponseDto.builder()
                         .path(getParentPath(obj.objectName()))
-                        .name(getNameFromFullPath(obj.objectName()))
+                        .name(extractNameFromPath(obj.objectName()))
                         .size(obj.size())
-                        .type(obj.isDir() ? DIRECTORY.name() : FILE.name())
+                        .type(isFolder(obj.objectName()) ? DIRECTORY.name() : FILE.name())
                         .build()).toList();
     }
 
     @Override
     public ResourceInfoResponseDto createDirectory(String directoryPath) {
+        // TODO: add directories recursive if not exists (bug)
         repository.createEmptyDirectory(directoryPath);
         return ResourceInfoResponseDto.builder()
-                .name(getNameFromFullPath(directoryPath))
+                .name(extractNameFromPath(directoryPath))
                 .path(getParentPath(directoryPath))
                 .type(DIRECTORY.name())
                 .build();
@@ -58,10 +57,10 @@ public class StorageServiceImpl implements StorageService {
     public ResourceInfoResponseDto getResourceInfo(String resourcePath) {
         try (var obj = repository.getObject(resourcePath)) {
             return ResourceInfoResponseDto.builder()
-                    .name(PathUtils.getNameFromFullPath(resourcePath))
+                    .name(extractNameFromPath(resourcePath))
                     .size(obj.headers().byteCount())
-                    .type(FILE.name())
-                    .path(PathUtils.getParentPath(resourcePath))
+                    .type(isFolder(resourcePath) ? DIRECTORY.name() : FILE.name())
+                    .path(getParentPath(resourcePath))
                     .build();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -79,7 +78,7 @@ public class StorageServiceImpl implements StorageService {
 
         // TODO: think about extend checking directory or not with tag comparing (if suffix "/" always mean directory - don't need it)
         // TODO: exception handling keyDoesNotExistsException
-        return resourcePath.endsWith("/") ? directoryDownloadStrategyImpl.download(normalizedOriginalResourcePath)
+        return isFolder(resourcePath) ? directoryDownloadStrategyImpl.download(normalizedOriginalResourcePath)
                 : fileDownloadStrategyImpl.download(normalizedOriginalResourcePath);
     }
 
@@ -89,7 +88,7 @@ public class StorageServiceImpl implements StorageService {
         repository.copyObject(from, to, folder);
         repository.removeObject(from, folder);
         return ResourceInfoResponseDto.builder()
-                .name(PathUtils.getNameFromFullPath(from))
+                .name(extractNameFromPath(from))
                 .path(to)
                 .type(folder ? DIRECTORY.name() : FILE.name())
                 .size(folder ? getBytesCount(to) : null)
@@ -98,7 +97,20 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public List<ResourceInfoResponseDto> searchResourcesByQuery(String query) {
-        return List.of();
+        var allObjects = repository.getListObjectsByPath("", true);
+        var filteredObjects = allObjects.stream()
+                .filter(obj -> extractNameFromPath(obj.objectName()).toLowerCase()
+                        .contains(query.toLowerCase())).toList();
+        log.info("All objects: {}", allObjects);
+        log.info("Filtered obj: {}", filteredObjects);
+        return filteredObjects.stream()
+                .map(obj -> ResourceInfoResponseDto.builder()
+                        .name(extractNameFromPath(obj.objectName()))
+                        .path(getParentPath(obj.objectName()))
+                        .size(obj.size() > 0 ? obj.size() : null)
+                        .type(isFolder(obj.objectName()) ? DIRECTORY.name() : FILE.name())
+                        .build())
+                .toList();
     }
 
     @SneakyThrows
@@ -149,7 +161,6 @@ public class StorageServiceImpl implements StorageService {
                     uploadedResources.add(ResourceInfoResponseDto.builder()
                             .name(directory)
                             .path(getParentPath(currentDirectory))
-                            .name(directory)
                             .size(0L) // directories always would be with type=application/x-directory and size=0 (S3 specifically logic)
                             .type(DIRECTORY.name())
                             .build());
@@ -161,9 +172,5 @@ public class StorageServiceImpl implements StorageService {
 
     private long getBytesCount(String filePath) {
         return repository.getObject(filePath).headers().byteCount();
-    }
-
-    private boolean isFolder(String from) {
-        return from.endsWith("/");
     }
 }
