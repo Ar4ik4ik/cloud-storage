@@ -1,17 +1,20 @@
 package com.github.ar4ik4ik.cloudstorage.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Slf4j
 public class PathUtils {
+    public static boolean isFolder(String path) {
+        return path.endsWith("/");
+    }
     public static String getFilenameForDownload(String path) {
-
-        Path inputPath = Paths.get(path);
-
-        if (path.endsWith("/")) {
-            return inputPath.getFileName().toString().concat(".zip");
+        if (isFolder(path)) {
+            return extractNameFromPath(path).replace("/", "") + ".zip";
         } else {
-            return inputPath.getFileName().toString();
+            return extractNameFromPath(path);
         }
     }
 
@@ -33,8 +36,26 @@ public class PathUtils {
         return "/";
     }
 
-    public static String getNameFromFullPath(String fullDirectoryPath) {
-        String filename = Paths.get(fullDirectoryPath).getFileName().toString();
-        return fullDirectoryPath.endsWith("/") ? filename.concat("/") : filename;
+    public static String extractNameFromPath(String path) {
+        if (path.isEmpty()) {
+            return "";
+        }
+        if (path.equals("/")) {
+            return "/";
+        }
+
+        String tempPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+        int lastSlashIdx = tempPath.lastIndexOf("/");
+        String name;
+        if (lastSlashIdx == -1) {
+            name = tempPath;
+        } else {
+            name = tempPath.substring(lastSlashIdx + 1);
+        }
+        if (path.endsWith("/") && !name.isEmpty()) {
+            return name + "/";
+        }
+        log.info("name={}", name);
+        return name;
     }
 }
