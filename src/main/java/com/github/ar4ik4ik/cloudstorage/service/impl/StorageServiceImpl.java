@@ -54,13 +54,13 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public ResourceInfoResponseDto getResourceInfo(String resourcePath) {
-        try (var obj = repository.getObject(resourcePath)) {
+    public ResourceInfoResponseDto getResourceInfo(String path) {
+        try (var obj = repository.getObject(path)) {
             return ResourceInfoResponseDto.builder()
-                    .name(extractNameFromPath(resourcePath))
+                    .name(extractNameFromPath(path))
                     .size(obj.headers().byteCount())
-                    .type(isFolder(resourcePath) ? DIRECTORY.name() : FILE.name())
-                    .path(getParentPath(resourcePath))
+                    .type(isFolder(path) ? DIRECTORY.name() : FILE.name())
+                    .path(getParentPath(path))
                     .build();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -68,17 +68,17 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public void deleteResource(String resourcePath) {
-        repository.removeObject(resourcePath, isFolder(resourcePath));
+    public void deleteResource(String path) {
+        repository.removeObject(path, isFolder(path));
     }
 
     @Override
-    public StreamingResponseBody downloadResource(String resourcePath) {
-        String normalizedOriginalResourcePath = Paths.get(resourcePath).normalize().toString();
+    public StreamingResponseBody downloadResource(String path) {
+        String normalizedOriginalResourcePath = Paths.get(path).normalize().toString();
 
         // TODO: think about extend checking directory or not with tag comparing (if suffix "/" always mean directory - don't need it)
         // TODO: exception handling keyDoesNotExistsException
-        return isFolder(resourcePath) ? directoryDownloadStrategyImpl.download(normalizedOriginalResourcePath)
+        return isFolder(path) ? directoryDownloadStrategyImpl.download(normalizedOriginalResourcePath)
                 : fileDownloadStrategyImpl.download(normalizedOriginalResourcePath);
     }
 
@@ -115,14 +115,14 @@ public class StorageServiceImpl implements StorageService {
 
     @SneakyThrows
     @Override
-    public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, String resourcePath) {
-        String normalizedOriginalResourcePath = Paths.get(resourcePath).normalize().toString();
+    public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, String path) {
+        String normalizedOriginalResourcePath = Paths.get(path).normalize().toString();
         List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
         // if already exist do nothing, same logic if no directories in the path
         addDirectoriesToStorageRecursive(normalizedOriginalResourcePath, uploadedResources);
 
         for (MultipartFile file : files) {
-            ResourceInfo resourceInfo = ResourceInfo.create(resourcePath, file);
+            ResourceInfo resourceInfo = ResourceInfo.create(path, file);
             addFileToStorage(resourceInfo, uploadedResources);
         }
         return uploadedResources;
