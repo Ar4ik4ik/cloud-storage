@@ -48,9 +48,8 @@ public class S3RepositoryImpl implements S3Repository {
                     .stream(inputStream, objectSize, -1)
                     .tags(Map.of("type", FILE.name()))
                     .build());
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new StorageException("Failed to upload data in storage, input data: path={%s}, contentType={%s}. Cause: %s"
-                    .formatted(path, contentType, e.getMessage()));
+        } catch (Exception e) {
+            throw mapExceptionToDomain("removeFile", path, e);
         }
     }
 
@@ -61,9 +60,8 @@ public class S3RepositoryImpl implements S3Repository {
                     .bucket(bucket)
                     .object(path)
                     .build());
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new StorageException("Failed to retrieve data from storage, input data: path={%s}. Cause: %s"
-                    .formatted(path, e.getMessage()));
+        } catch (Exception e) {
+            throw mapExceptionToDomain("removeFile", path, e);
         }
     }
 
@@ -77,9 +75,8 @@ public class S3RepositoryImpl implements S3Repository {
                     .tags(Tags.newObjectTags(Map.of("type", DIRECTORY.name())))
                     .stream(new ByteArrayInputStream(new byte[0]), 0, -1)
                     .build());
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new StorageException("Failed to upload data in storage, input data: key={%s}, contentType={%s}. Cause: %s"
-                    .formatted(path, "application/x-directory", e.getMessage()));
+        } catch (Exception e) {
+            throw mapExceptionToDomain("removeFile", path, e);
         }
     }
 
@@ -96,9 +93,8 @@ public class S3RepositoryImpl implements S3Repository {
                     try {
                         log.info("item=={}", item);
                         return item.get();
-                    } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-                        throw new StorageException("Failed to get data from storage, input data: key={%s}. Cause: %s"
-                                .formatted(path, e.getMessage()));
+                    } catch (Exception e) {
+                        throw mapExceptionToDomain("removeFile", path, e);
                     }
                 })
                 .toList();
@@ -122,21 +118,19 @@ public class S3RepositoryImpl implements S3Repository {
         }
     }
 
-    private void removeFile(String path) {
+    private void removeFile(String path) throws StorageException {
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()
                     .bucket(bucket)
                     .object(path)
                     .build());
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            log.warn("Failed to delete object: {}\nIn bucket: {}:{}",
-                    path, bucket, e.getMessage());
-            throw new StorageException(e.getMessage());
+        } catch (Exception e) {
+            throw mapExceptionToDomain("removeFile", path, e);
         }
 
     }
 
-    private void removeFolder(String path) {
+    private void removeFolder(String path) throws StorageException {
         List<DeleteObject> storageObjectsToRemove = getListObjectsByPath(path, true).stream()
                 .map(object -> new DeleteObject(object.objectName()))
                 .toList();
@@ -155,12 +149,12 @@ public class S3RepositoryImpl implements S3Repository {
                 log.warn("Failed to delete object: {}\nIn bucket: {}:{}",
                         deleteError.objectName(), deleteError.bucketName(), deleteError.message());
             } catch (Exception e) {
-                log.error("Failed to retrieve delete results for {}\nCause: {}", path, e.getMessage());
+                throw mapExceptionToDomain("removeFolder", path, e);
             }
         }
     }
 
-    private void copyFile(String from, String to) {
+    private void copyFile(String from, String to) throws StorageException {
         try {
             minioClient.copyObject(CopyObjectArgs.builder()
                     .bucket(bucket)
@@ -170,13 +164,12 @@ public class S3RepositoryImpl implements S3Repository {
                             .object(from)
                             .build())
                     .build());
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new StorageException("Failed to copy data in storage, input data: from={%s}, to={%s}. Cause: %s"
-                    .formatted(from, to, e.getMessage()));
+        } catch (Exception e) {
+            throw mapExceptionToDomain("copyFile", from, e);
         }
     }
 
-    private void copyFolder(String from, String to) {
+    private void copyFolder(String from, String to) throws StorageException {
         List<Item> storageObjects = getListObjectsByPath(from, true);
         storageObjects.forEach(object -> {
             try {
@@ -188,9 +181,8 @@ public class S3RepositoryImpl implements S3Repository {
                                 .object(object.objectName())
                                 .build())
                         .build());
-            } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-                throw new StorageException("Failed to copy data in storage, input data: from={%s}, to={%s}. Cause: %s"
-                        .formatted(from, to, e.getMessage()));
+            } catch (Exception e) {
+                throw mapExceptionToDomain("copyFolder", from, e);
             }
         });
     }
