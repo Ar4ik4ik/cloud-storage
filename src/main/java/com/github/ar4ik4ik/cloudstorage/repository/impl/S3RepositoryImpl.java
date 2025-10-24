@@ -194,4 +194,33 @@ public class S3RepositoryImpl implements S3Repository {
             }
         });
     }
+
+    private StorageException mapExceptionToDomain(String operation, String path, Exception e) {
+        log.error("Caught exception during MinIO operation {{}} for path {{}}\nCause: {{}}",
+                operation, path, e.getMessage());
+
+        String baseErrorMessage = String.format("Failed MinIO operation {%s} for bucket {%s} and path {%s}",
+                operation, bucket, path);
+
+        if (e instanceof ErrorResponseException err) {
+            String errorCode = err.errorResponse().code();
+            String fullMessage = String.format("Failed MinIO operation {%s} for bucket {%s} and path {%s}",
+                    operation, bucket, path);
+            return switch (errorCode) {
+                case "NoSuchKey" -> new ObjectNotFoundException(fullMessage, err);
+                case "PreconditionFailed" -> new ObjectAlreadyExistException(fullMessage, err);
+                default -> new StorageException(fullMessage, err);
+            };
+        } else if (e instanceof InternalException || e instanceof ServerException) {
+            return new StorageServiceException(String.format("%s. MinIO internal server error: %s", baseErrorMessage, e.getMessage()), e);
+        } else if (e instanceof InvalidKeyException || e instanceof NoSuchAlgorithmException) {
+            return new StorageConfigurationException(String.format("%s. MinIO client configuration error: %s", baseErrorMessage, e.getMessage()), e);
+        } else if (e instanceof IOException) {
+            return new StorageConnectionException(String.format("%s. Network or I/O error: %s", baseErrorMessage, e.getMessage()), e);
+        } else if (e instanceof MinioException) {
+            return new StorageServiceException(String.format("%s. Generic MinIO client error: %s", baseErrorMessage, e.getMessage()), e);
+        } else {
+            return new StorageException(String.format("%s. An unexpected error occurred: %s", baseErrorMessage, e.getMessage()), e);
+        }
+    }
 }
