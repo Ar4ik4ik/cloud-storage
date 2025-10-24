@@ -1,10 +1,13 @@
 package com.github.ar4ik4ik.cloudstorage.repository.impl;
 
-import com.github.ar4ik4ik.cloudstorage.exception.StorageException;
+import com.github.ar4ik4ik.cloudstorage.exception.*;
 import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
 import com.github.ar4ik4ik.cloudstorage.utils.PathUtils;
 import io.minio.*;
+import io.minio.errors.ErrorResponseException;
+import io.minio.errors.InternalException;
 import io.minio.errors.MinioException;
+import io.minio.errors.ServerException;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
@@ -45,6 +48,7 @@ public class S3RepositoryImpl implements S3Repository {
                     .bucket(bucket)
                     .object(path)
                     .contentType(contentType)
+                    .headers(Map.of("If-None-Match", "*"))
                     .stream(inputStream, objectSize, -1)
                     .tags(Map.of("type", FILE.name()))
                     .build());
@@ -72,6 +76,7 @@ public class S3RepositoryImpl implements S3Repository {
                     .bucket(bucket)
                     .object(path)
                     .contentType("application/x-directory")
+                    .headers(Map.of("If-None-Match", "*"))
                     .tags(Tags.newObjectTags(Map.of("type", DIRECTORY.name())))
                     .stream(new ByteArrayInputStream(new byte[0]), 0, -1)
                     .build());
