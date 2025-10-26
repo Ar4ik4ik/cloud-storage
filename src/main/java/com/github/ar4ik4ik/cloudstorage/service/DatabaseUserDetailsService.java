@@ -1,8 +1,8 @@
 package com.github.ar4ik4ik.cloudstorage.service;
 
-import com.github.ar4ik4ik.cloudstorage.controller.UserCreateDto;
 import com.github.ar4ik4ik.cloudstorage.entity.Authority;
 import com.github.ar4ik4ik.cloudstorage.entity.AuthorityType;
+import com.github.ar4ik4ik.cloudstorage.entity.StorageUserDetails;
 import com.github.ar4ik4ik.cloudstorage.repository.AuthorityRepository;
 import com.github.ar4ik4ik.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,39 +15,50 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
 public class DatabaseUserDetailsService implements UserDetailsService {
 
-    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final AuthorityRepository authorityRepository;
 
     @Transactional(readOnly = true)
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return this.userRepository.findUserByUsername(username)
-                .map(user -> User.builder()
-                        .username(user.getUsername())
-                        .password(user.getPassword())
-                        .authorities(user.getAuthorities().stream()
-                                .map(Authority::getName)
-                                .map(AuthorityType::getAuthority)
-                                .map(SimpleGrantedAuthority::new)
-                                .toList())
-                        .build()).orElseThrow(() -> new UsernameNotFoundException(
+        return userRepository.findUserByUsername(username)
+                .map(this::buildStorageUserDetails)
+                .orElseThrow(() -> new UsernameNotFoundException(
                         "User with username: %s not found".formatted(username)));
     }
 
-    @Transactional
-    public void processUserRegister(UserCreateDto userCreateDto) {
-        this.userRepository.save(com.github.ar4ik4ik.cloudstorage.entity.User.builder()
-                        .username(userCreateDto.username())
-                        .password(passwordEncoder.encode(userCreateDto.password()))
-                        .authorities(List.of(
-                                authorityRepository.getAuthorityByName(AuthorityType.ROLE_USER)))
-                .build());
+    private StorageUserDetails buildStorageUserDetails(com.github.ar4ik4ik.cloudstorage.entity.User userEntity) {
+        return StorageUserDetails.builder()
+                .user(buildSpringSecurityUser(userEntity))
+                .userRootDirectory(buildUserRootDirectory(userEntity.getId()))
+                .build();
+    }
+
+    private User buildSpringSecurityUser(com.github.ar4ik4ik.cloudstorage.entity.User userEntity) {
+        List<SimpleGrantedAuthority> grantedAuthorities = mapAuthoritiesToGrantedAuthorities(userEntity.getAuthorities());
+        return new org.springframework.security.core.userdetails.User(
+                userEntity.getUsername(),
+                userEntity.getPassword(),
+                grantedAuthorities
+        );
+    }
+
+    private List<SimpleGrantedAuthority> mapAuthoritiesToGrantedAuthorities(Collection<Authority> authorities) {
+        return authorities.stream()
+                .map(Authority::getName)
+                .map(AuthorityType::getAuthority)
+                .map(SimpleGrantedAuthority::new)
+                .toList();
+    }
+
+    private String buildUserRootDirectory(Integer userId) {
+        return String.format("user-%s-files", userId);
     }
 }
