@@ -53,7 +53,7 @@ public class S3RepositoryImpl implements S3Repository {
                     .tags(Map.of("type", FILE.name()))
                     .build());
         } catch (Exception e) {
-            throw mapExceptionToDomain("removeFile", path, e);
+            throw mapExceptionToDomain("uploadObject", path, e);
         }
     }
 
@@ -65,7 +65,7 @@ public class S3RepositoryImpl implements S3Repository {
                     .object(path)
                     .build());
         } catch (Exception e) {
-            throw mapExceptionToDomain("removeFile", path, e);
+            throw mapExceptionToDomain("getObject", path, e);
         }
     }
 
@@ -81,7 +81,7 @@ public class S3RepositoryImpl implements S3Repository {
                     .stream(new ByteArrayInputStream(new byte[0]), 0, -1)
                     .build());
         } catch (Exception e) {
-            throw mapExceptionToDomain("removeFile", path, e);
+            throw mapExceptionToDomain("createEmptyDirectory", path, e);
         }
     }
 
@@ -99,7 +99,7 @@ public class S3RepositoryImpl implements S3Repository {
                         log.info("item=={}", item);
                         return item.get();
                     } catch (Exception e) {
-                        throw mapExceptionToDomain("removeFile", path, e);
+                        throw mapExceptionToDomain("getListObjectsByPath", path, e);
                     }
                 })
                 .toList();

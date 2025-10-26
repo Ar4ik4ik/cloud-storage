@@ -2,9 +2,6 @@ package com.github.ar4ik4ik.cloudstorage.utils;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 @Slf4j
 public class PathUtils {
     public static boolean isFolder(String path) {
