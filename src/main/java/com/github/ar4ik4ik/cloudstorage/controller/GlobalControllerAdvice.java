@@ -7,6 +7,7 @@ import com.github.ar4ik4ik.cloudstorage.exception.ObjectNotFoundException;
 import com.github.ar4ik4ik.cloudstorage.exception.StorageException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,6 +36,18 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public MessageDto handleValidationException(ConstraintViolationException ex) {
+        return new MessageDto(ex.getMessage());
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public MessageDto handleAuthException(AuthenticationException ex) {
+        return new MessageDto(ex.getMessage());
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public MessageDto handleUsernameAlreadyExist(UserAlreadyExistsException ex) {
         return new MessageDto(ex.getMessage());
     }
 }
