@@ -1,6 +1,6 @@
 package com.github.ar4ik4ik.cloudstorage.service;
 
-import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
+import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 

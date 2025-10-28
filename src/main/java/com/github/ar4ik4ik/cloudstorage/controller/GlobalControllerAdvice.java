@@ -1,6 +1,7 @@
 package com.github.ar4ik4ik.cloudstorage.controller;
 
-import com.github.ar4ik4ik.cloudstorage.dto.MessageDto;
+import com.github.ar4ik4ik.cloudstorage.exception.UserAlreadyExistsException;
+import com.github.ar4ik4ik.cloudstorage.model.dto.MessageDto;
 import com.github.ar4ik4ik.cloudstorage.exception.ObjectAlreadyExistException;
 import com.github.ar4ik4ik.cloudstorage.exception.ObjectNotFoundException;
 import com.github.ar4ik4ik.cloudstorage.exception.StorageException;

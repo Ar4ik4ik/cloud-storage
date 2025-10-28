@@ -1,4 +1,4 @@
-package com.github.ar4ik4ik.cloudstorage.dto;
+package com.github.ar4ik4ik.cloudstorage.model.dto;
 
 import lombok.Builder;
 

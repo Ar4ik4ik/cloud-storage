@@ -1,9 +1,9 @@
-package com.github.ar4ik4ik.cloudstorage.service;
+package com.github.ar4ik4ik.cloudstorage.service.impl;
 
-import com.github.ar4ik4ik.cloudstorage.entity.Authority;
-import com.github.ar4ik4ik.cloudstorage.entity.AuthorityType;
-import com.github.ar4ik4ik.cloudstorage.entity.StorageUserDetails;
-import com.github.ar4ik4ik.cloudstorage.repository.AuthorityRepository;
+
+import com.github.ar4ik4ik.cloudstorage.model.AuthorityType;
+import com.github.ar4ik4ik.cloudstorage.model.entity.Authority;
+import com.github.ar4ik4ik.cloudstorage.model.StorageUserDetails;
 import com.github.ar4ik4ik.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DatabaseUserDetailsService implements UserDetailsService {
+public class DatabaseUserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
 
@@ -34,14 +33,14 @@ public class DatabaseUserDetailsService implements UserDetailsService {
                         "User with username: %s not found".formatted(username)));
     }
 
-    private StorageUserDetails buildStorageUserDetails(com.github.ar4ik4ik.cloudstorage.entity.User userEntity) {
+    private StorageUserDetails buildStorageUserDetails(com.github.ar4ik4ik.cloudstorage.model.entity.User userEntity) {
         return StorageUserDetails.builder()
                 .user(buildSpringSecurityUser(userEntity))
                 .userRootDirectory(buildUserRootDirectory(userEntity.getId()))
                 .build();
     }
 
-    private User buildSpringSecurityUser(com.github.ar4ik4ik.cloudstorage.entity.User userEntity) {
+    private User buildSpringSecurityUser(com.github.ar4ik4ik.cloudstorage.model.entity.User userEntity) {
         List<SimpleGrantedAuthority> grantedAuthorities = mapAuthoritiesToGrantedAuthorities(userEntity.getAuthorities());
         return new org.springframework.security.core.userdetails.User(
                 userEntity.getUsername(),

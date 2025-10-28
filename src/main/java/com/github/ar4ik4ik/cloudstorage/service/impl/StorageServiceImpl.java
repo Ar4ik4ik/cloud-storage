@@ -1,6 +1,6 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
-import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
+import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
 import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
@@ -16,8 +16,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
-import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.FILE;
+import static com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
+import static com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto.ResourceType.FILE;
 import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.*;
 
 @Slf4j

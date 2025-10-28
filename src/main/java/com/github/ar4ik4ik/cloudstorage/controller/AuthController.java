@@ -1,8 +1,8 @@
 package com.github.ar4ik4ik.cloudstorage.controller;
 
-import com.github.ar4ik4ik.cloudstorage.entity.AuthResponseDto;
-import com.github.ar4ik4ik.cloudstorage.entity.SignInRequestDto;
-import com.github.ar4ik4ik.cloudstorage.entity.SignUpRequestDto;
+import com.github.ar4ik4ik.cloudstorage.model.dto.AuthResponseDto;
+import com.github.ar4ik4ik.cloudstorage.model.dto.SignInRequestDto;
+import com.github.ar4ik4ik.cloudstorage.model.dto.SignUpRequestDto;
 import com.github.ar4ik4ik.cloudstorage.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

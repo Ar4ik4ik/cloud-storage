@@ -1,6 +1,6 @@
 package com.github.ar4ik4ik.cloudstorage.controller;
 
-import com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto;
+import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.model.ResourcePath;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
 import jakarta.validation.Valid;

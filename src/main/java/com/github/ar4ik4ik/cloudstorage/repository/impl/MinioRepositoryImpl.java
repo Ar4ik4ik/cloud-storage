@@ -28,13 +28,13 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.StreamSupport;
 
-import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
-import static com.github.ar4ik4ik.cloudstorage.dto.ResourceInfoResponseDto.ResourceType.FILE;
+import static com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
+import static com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto.ResourceType.FILE;
 
 @Slf4j
 @RequiredArgsConstructor
 @Repository
-public class S3RepositoryImpl implements S3Repository {
+public class MinioRepositoryImpl implements S3Repository {
 
     @Value("${minio.bucket}")
     private String bucket;

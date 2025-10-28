@@ -1,9 +1,10 @@
 package com.github.ar4ik4ik.cloudstorage.service;
 
-import com.github.ar4ik4ik.cloudstorage.entity.AuthorityType;
-import com.github.ar4ik4ik.cloudstorage.entity.SignInRequestDto;
-import com.github.ar4ik4ik.cloudstorage.entity.SignUpRequestDto;
+
 import com.github.ar4ik4ik.cloudstorage.exception.UserAlreadyExistsException;
+import com.github.ar4ik4ik.cloudstorage.model.AuthorityType;
+import com.github.ar4ik4ik.cloudstorage.model.dto.SignInRequestDto;
+import com.github.ar4ik4ik.cloudstorage.model.dto.SignUpRequestDto;
 import com.github.ar4ik4ik.cloudstorage.repository.AuthorityRepository;
 import com.github.ar4ik4ik.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class AuthService {
             throw new UserAlreadyExistsException(String.format("Username %s already exists", requestDto.username()));
         }
 
-        userRepository.save(com.github.ar4ik4ik.cloudstorage.entity.User.builder()
+        userRepository.save(com.github.ar4ik4ik.cloudstorage.model.entity.User.builder()
                 .username(requestDto.username().toLowerCase())
                 .password(passwordEncoder.encode(requestDto.password()))
                 .authorities(Collections.singletonList(
