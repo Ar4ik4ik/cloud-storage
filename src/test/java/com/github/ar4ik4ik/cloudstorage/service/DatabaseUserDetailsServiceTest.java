@@ -1,15 +1,14 @@
 package com.github.ar4ik4ik.cloudstorage.service;
 
-import com.github.ar4ik4ik.cloudstorage.entity.UserCreateDto;
-import com.github.ar4ik4ik.cloudstorage.entity.Authority;
-import com.github.ar4ik4ik.cloudstorage.entity.AuthorityType;
-import com.github.ar4ik4ik.cloudstorage.entity.User;
+import com.github.ar4ik4ik.cloudstorage.model.AuthorityType;
+import com.github.ar4ik4ik.cloudstorage.model.entity.Authority;
+import com.github.ar4ik4ik.cloudstorage.model.entity.User;
 import com.github.ar4ik4ik.cloudstorage.repository.AuthorityRepository;
 import com.github.ar4ik4ik.cloudstorage.repository.UserRepository;
+import com.github.ar4ik4ik.cloudstorage.service.impl.DatabaseUserDetailsServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -39,7 +38,7 @@ public class DatabaseUserDetailsServiceTest {
     private AuthorityRepository authorityRepository;
 
     @InjectMocks
-    private DatabaseUserDetailsService databaseUserDetailsService;
+    private DatabaseUserDetailsServiceImpl databaseUserDetailsService;
 
     @Test
     @DisplayName("Returns userDetails object when username is exists")
