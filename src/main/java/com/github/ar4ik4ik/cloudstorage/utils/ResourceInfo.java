@@ -3,6 +3,7 @@ package com.github.ar4ik4ik.cloudstorage.utils;
 import lombok.Getter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.Objects;
 
@@ -20,7 +21,7 @@ public class ResourceInfo {
         ResourceInfo info = new ResourceInfo();
         info.multipartFile = file;
         info.originalFilename = Objects.requireNonNull(file.getOriginalFilename());
-        info.normalizedFilename = Paths.get(info.originalFilename).normalize().toString();
+        info.normalizedFilename = Paths.get(info.originalFilename).normalize().toString().replace(File.separator, "/");
         info.fullMinioPath = normalizedResourcePath + info.normalizedFilename;
 
         int lastSlashIdx = info.fullMinioPath.lastIndexOf("/");

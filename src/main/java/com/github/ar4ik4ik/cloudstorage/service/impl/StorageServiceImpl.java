@@ -74,12 +74,8 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public StreamingResponseBody downloadResource(String path) {
-        String normalizedOriginalResourcePath = Paths.get(path).normalize().toString();
-
-        // TODO: think about extend checking directory or not with tag comparing (if suffix "/" always mean directory - don't need it)
-        // TODO: exception handling keyDoesNotExistsException
-        return isFolder(path) ? directoryDownloadStrategyImpl.download(normalizedOriginalResourcePath)
-                : fileDownloadStrategyImpl.download(normalizedOriginalResourcePath);
+        return isFolder(path) ? directoryDownloadStrategyImpl.download(path)
+                : fileDownloadStrategyImpl.download(path);
     }
 
     @Override
@@ -101,8 +97,6 @@ public class StorageServiceImpl implements StorageService {
         var filteredObjects = allObjects.stream()
                 .filter(obj -> extractNameFromPath(obj.objectName()).toLowerCase()
                         .contains(query.toLowerCase())).toList();
-        log.info("All objects: {}", allObjects);
-        log.info("Filtered obj: {}", filteredObjects);
         return filteredObjects.stream()
                 .map(obj -> ResourceInfoResponseDto.builder()
                         .name(extractNameFromPath(obj.objectName()))
@@ -119,7 +113,7 @@ public class StorageServiceImpl implements StorageService {
         String normalizedOriginalResourcePath = Paths.get(path).normalize().toString();
         List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
         // if already exist do nothing, same logic if no directories in the path
-        addDirectoriesToStorageRecursive(normalizedOriginalResourcePath, uploadedResources);
+        addDirectoriesToStorageRecursive(path, uploadedResources);
 
         for (MultipartFile file : files) {
             ResourceInfo resourceInfo = ResourceInfo.create(path, file);

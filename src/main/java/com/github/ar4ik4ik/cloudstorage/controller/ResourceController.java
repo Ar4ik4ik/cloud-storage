@@ -6,7 +6,6 @@ import com.github.ar4ik4ik.cloudstorage.service.impl.StorageServiceImpl;
 import com.github.ar4ik4ik.cloudstorage.utils.PathUtils;
 import com.github.ar4ik4ik.cloudstorage.validation.ValidFiles;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
