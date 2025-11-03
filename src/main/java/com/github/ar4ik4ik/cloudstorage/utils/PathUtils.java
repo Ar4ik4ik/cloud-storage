@@ -21,7 +21,7 @@ public class PathUtils {
 
     public static String getParentPath(String fullDirectoryPath) {
         if (fullDirectoryPath == null || fullDirectoryPath.isEmpty() || fullDirectoryPath.equals("/")) {
-            return "/";
+            return "";
         }
         String pathWithoutTrailingSlash = fullDirectoryPath.endsWith("/")
                 ? fullDirectoryPath.substring(0, fullDirectoryPath.length() - 1)
@@ -30,7 +30,7 @@ public class PathUtils {
         if (lastSlashIdx != -1) {
             return pathWithoutTrailingSlash.substring(0, lastSlashIdx + 1);
         }
-        return "/";
+        return "";
     }
 
     public static String extractNameFromPath(String path) {
@@ -38,7 +38,7 @@ public class PathUtils {
             return "";
         }
         if (path.equals("/")) {
-            return "/";
+            return "";
         }
 
         String tempPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
