@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 
 public class PathValidator implements ConstraintValidator<ValidCharacters, String> {
-    private final Pattern NOT_VALID_CHARACTERS_PATTERN = Pattern.compile("[<>:\\\"\\\\\\\\|?*/]");
+    private final Pattern NOT_VALID_CHARACTERS_PATTERN = Pattern.compile("[<>:\\\"\\\\\\\\|?*]");
 
     @Override
     public boolean isValid(String path, ConstraintValidatorContext constraintValidatorContext) {
