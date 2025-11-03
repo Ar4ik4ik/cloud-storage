@@ -30,9 +30,10 @@ spring:
       password: ${REDIS_PASSWORD}
       port: 6379
       database: 0
+      username: ${REDIS_USER}
   session:
     redis:
-      flush-mode: on-save
+      flush-mode: immediate
       namespace: spring:session
   servlet:
     multipart:
@@ -49,8 +50,9 @@ server:
     max-part-count: 500
 logging:
   level:
-    org.springframework.session: DEBUG
-    org.springframework.data.redis: DEBUG
+    org.springframework.session: TRACE
+    org.springframework.data.redis: TRACE
+    org.springframework.security: TRACE
 minio:
   url: http://localhost:9000
   accessKey: cloud-storage-application
