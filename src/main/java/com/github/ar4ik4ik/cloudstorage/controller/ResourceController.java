@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
@@ -63,8 +64,13 @@ public class ResourceController {
     @PostMapping
     public ResponseEntity<List<ResourceInfoResponseDto>> uploadResource(
             @RequestParam(name = "path") @Valid ResourcePath path,
-            @RequestParam(name = "files") @NotBlank @ValidFiles MultipartFile[] files) {
-        return ResponseEntity.created(URI.create(path.path()))
+            @RequestParam(name = "object") @ValidFiles MultipartFile[] files) {
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequestUri()
+                .path("/api/resource")
+                .queryParam("path", path.path())
+                .build().toUri();
+        return ResponseEntity.created(location)
                 .body(service.uploadResource(files, path.path()));
     }
 }

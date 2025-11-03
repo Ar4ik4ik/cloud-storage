@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
@@ -25,7 +26,12 @@ public class DirectoryController {
 
     @PostMapping(params = "path")
     public ResponseEntity<ResourceInfoResponseDto> createDirectory(@RequestParam(name = "path") @Valid ResourcePath path) {
-        return ResponseEntity.created(URI.create(path.path()))
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequestUri()
+                .path("/api/directory")
+                .queryParam("path", path.path())
+                .build().toUri();
+        return ResponseEntity.created(location)
                 .body(service.createDirectory(path.path()));
     }
 }
