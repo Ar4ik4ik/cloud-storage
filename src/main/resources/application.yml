@@ -44,7 +44,9 @@ server:
   port: 8080
   servlet:
     session:
-      timeout: 60s
+      timeout: 30m
+  tomcat:
+    max-part-count: 500
 logging:
   level:
     org.springframework.session: DEBUG
