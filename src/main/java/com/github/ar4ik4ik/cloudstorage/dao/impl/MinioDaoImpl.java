@@ -1,7 +1,7 @@
-package com.github.ar4ik4ik.cloudstorage.repository.impl;
+package com.github.ar4ik4ik.cloudstorage.dao.impl;
 
+import com.github.ar4ik4ik.cloudstorage.dao.S3Dao;
 import com.github.ar4ik4ik.cloudstorage.exception.*;
-import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
 import com.github.ar4ik4ik.cloudstorage.utils.PathUtils;
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
@@ -34,7 +34,7 @@ import static com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto
 @Slf4j
 @RequiredArgsConstructor
 @Repository
-public class MinioRepositoryImpl implements S3Repository {
+public class MinioDaoImpl implements S3Dao {
 
     @Value("${minio.bucket}")
     private String bucket;
@@ -86,23 +86,26 @@ public class MinioRepositoryImpl implements S3Repository {
     }
 
     @Override
-    public List<Item> getListObjectsByPath(String path, boolean recursive) throws StorageException {
+    public List<Item> getListObjectsByPath(String path, boolean recursive, boolean includeSource) throws StorageException {
         var storageObjectsIterator = minioClient.listObjects(ListObjectsArgs.builder()
                 .bucket(bucket)
                 .prefix(path)
                 .recursive(recursive)
                 .build()).iterator();
-
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(storageObjectsIterator, Spliterator.ORDERED), false)
+        var itemStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(storageObjectsIterator,
+                        Spliterator.ORDERED), false)
                 .map(item -> {
                     try {
-                        log.info("item=={}", item);
                         return item.get();
                     } catch (Exception e) {
                         throw mapExceptionToDomain("getListObjectsByPath", path, e);
                     }
-                })
-                .toList();
+                });
+        if (includeSource) {
+            return itemStream.toList();
+        } else {
+            return itemStream.filter(item -> !item.objectName().equals(path)).toList();
+        }
     }
 
     @Override
@@ -136,7 +139,7 @@ public class MinioRepositoryImpl implements S3Repository {
     }
 
     private void removeFolder(String path) throws StorageException {
-        List<DeleteObject> storageObjectsToRemove = getListObjectsByPath(path, true).stream()
+        List<DeleteObject> storageObjectsToRemove = getListObjectsByPath(path, true, true).stream()
                 .map(object -> new DeleteObject(object.objectName()))
                 .toList();
         if (storageObjectsToRemove.isEmpty()) {
@@ -175,7 +178,7 @@ public class MinioRepositoryImpl implements S3Repository {
     }
 
     private void copyFolder(String from, String to) throws StorageException {
-        List<Item> storageObjects = getListObjectsByPath(from, true);
+        List<Item> storageObjects = getListObjectsByPath(from, true, true);
         storageObjects.forEach(object -> {
             try {
                 minioClient.copyObject(CopyObjectArgs.builder()
@@ -193,8 +196,8 @@ public class MinioRepositoryImpl implements S3Repository {
     }
 
     private StorageException mapExceptionToDomain(String operation, String path, Exception e) {
-        log.error("Caught exception during MinIO operation {{}} for path {{}}\nCause: {{}}",
-                operation, path, e.getMessage());
+        log.error("Caught exception during MinIO operation {{}} for path {{}}\n",
+                operation, path, e);
 
         String baseErrorMessage = String.format("Failed MinIO operation {%s} for bucket {%s} and path {%s}",
                 operation, bucket, path);

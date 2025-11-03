@@ -1,7 +1,7 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
 import com.github.ar4ik4ik.cloudstorage.exception.StorageException;
-import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
+import com.github.ar4ik4ik.cloudstorage.dao.S3Dao;
 import com.github.ar4ik4ik.cloudstorage.service.DownloadStrategy;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +21,12 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 public class DirectoryDownloadStrategyImpl implements DownloadStrategy {
 
-    private final S3Repository repository;
+    private final S3Dao repository;
 
     @Override
     public StreamingResponseBody download(String resourcePath) {
         return outputStream -> {
-            var storageItems = repository.getListObjectsByPath(resourcePath, true);
+            var storageItems = repository.getListObjectsByPath(resourcePath, true, true);
 
             try (ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(outputStream))) {
                 for (Item item: storageItems) {

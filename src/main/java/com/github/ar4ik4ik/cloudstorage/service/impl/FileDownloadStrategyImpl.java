@@ -1,6 +1,6 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
-import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
+import com.github.ar4ik4ik.cloudstorage.dao.S3Dao;
 import com.github.ar4ik4ik.cloudstorage.service.DownloadStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -14,7 +14,7 @@ import java.io.BufferedInputStream;
 @RequiredArgsConstructor
 public class FileDownloadStrategyImpl implements DownloadStrategy {
 
-    private final S3Repository repository;
+    private final S3Dao repository;
 
     @Override
     @SneakyThrows

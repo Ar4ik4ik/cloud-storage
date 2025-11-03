@@ -1,7 +1,7 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
 import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
-import com.github.ar4ik4ik.cloudstorage.repository.S3Repository;
+import com.github.ar4ik4ik.cloudstorage.dao.S3Dao;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
 import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
@@ -28,11 +27,11 @@ public class StorageServiceImpl implements StorageService {
     private final DirectoryDownloadStrategyImpl directoryDownloadStrategyImpl;
     private final FileDownloadStrategyImpl fileDownloadStrategyImpl;
 
-    private final S3Repository repository;
+    private final S3Dao repository;
 
     @Override
         public List<ResourceInfoResponseDto> getDirectoryInfo(String directoryPath) {
-        return repository.getListObjectsByPath(directoryPath, false)
+        return repository.getListObjectsByPath(directoryPath, false, false)
                 .stream()
                 .map(obj -> ResourceInfoResponseDto.builder()
                         .path(getParentPath(obj.objectName()))
@@ -93,7 +92,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public List<ResourceInfoResponseDto> searchResourcesByQuery(String query) {
-        var allObjects = repository.getListObjectsByPath("", true);
+        var allObjects = repository.getListObjectsByPath("", true, true);
         var filteredObjects = allObjects.stream()
                 .filter(obj -> extractNameFromPath(obj.objectName()).toLowerCase()
                         .contains(query.toLowerCase())).toList();
@@ -110,7 +109,6 @@ public class StorageServiceImpl implements StorageService {
     @SneakyThrows
     @Override
     public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, String path) {
-        String normalizedOriginalResourcePath = Paths.get(path).normalize().toString();
         List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
         // if already exist do nothing, same logic if no directories in the path
         addDirectoriesToStorageRecursive(path, uploadedResources);
