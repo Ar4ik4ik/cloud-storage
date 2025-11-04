@@ -1,7 +1,7 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
-import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.dao.S3Dao;
+import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
 import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class StorageServiceImpl implements StorageService {
         return repository.getListObjectsByPath(directoryPath, false, false)
                 .stream()
                 .map(obj -> ResourceInfoResponseDto.builder()
-                        .path(getParentPath(obj.objectName()))
+                        .path(getParentPath(obj.objectName(), true))
                         .name(extractNameFromPath(obj.objectName()))
                         .size(obj.size())
                         .type(isFolder(obj.objectName()) ? DIRECTORY.name() : FILE.name())
@@ -47,7 +47,7 @@ public class StorageServiceImpl implements StorageService {
         repository.createEmptyDirectory(directoryPath);
         return ResourceInfoResponseDto.builder()
                 .name(extractNameFromPath(directoryPath))
-                .path(getParentPath(directoryPath))
+                .path(getParentPath(directoryPath, true))
                 .type(DIRECTORY.name())
                 .build();
     }
@@ -59,7 +59,7 @@ public class StorageServiceImpl implements StorageService {
                     .name(extractNameFromPath(path))
                     .size(obj.headers().byteCount())
                     .type(isFolder(path) ? DIRECTORY.name() : FILE.name())
-                    .path(getParentPath(path))
+                    .path(getParentPath(path, true))
                     .build();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -91,15 +91,15 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public List<ResourceInfoResponseDto> searchResourcesByQuery(String query) {
-        var allObjects = repository.getListObjectsByPath("", true, true);
+    public List<ResourceInfoResponseDto> searchResourcesByQuery(String query, String rootPath) {
+        var allObjects = repository.getListObjectsByPath(rootPath, true, true);
         var filteredObjects = allObjects.stream()
                 .filter(obj -> extractNameFromPath(obj.objectName()).toLowerCase()
                         .contains(query.toLowerCase())).toList();
         return filteredObjects.stream()
                 .map(obj -> ResourceInfoResponseDto.builder()
                         .name(extractNameFromPath(obj.objectName()))
-                        .path(getParentPath(obj.objectName()))
+                        .path(getParentPath(obj.objectName(), true))
                         .size(obj.size() > 0 ? obj.size() : null)
                         .type(isFolder(obj.objectName()) ? DIRECTORY.name() : FILE.name())
                         .build())
@@ -111,7 +111,7 @@ public class StorageServiceImpl implements StorageService {
     public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, String path) {
         List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
         // if already exist do nothing, same logic if no directories in the path
-        addDirectoriesToStorageRecursive(path, uploadedResources);
+        addDirectoriesToStorageRecursive(excludeRootPath(path), uploadedResources);
 
         for (MultipartFile file : files) {
             ResourceInfo resourceInfo = ResourceInfo.create(path, file);
@@ -152,7 +152,7 @@ public class StorageServiceImpl implements StorageService {
 
                     uploadedResources.add(ResourceInfoResponseDto.builder()
                             .name(directory)
-                            .path(getParentPath(currentDirectory))
+                            .path(getParentPath(currentDirectory, true))
                             .size(null) // directories always would be with type=application/x-directory and size=0 (S3 specifically logic)
                             .type(DIRECTORY.name())
                             .build());

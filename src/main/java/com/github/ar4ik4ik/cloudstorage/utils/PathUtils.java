@@ -19,7 +19,12 @@ public class PathUtils {
         return fullObjectPath.substring(fromDirectoryPath.length());
     }
 
-    public static String getParentPath(String fullDirectoryPath) {
+    public static String getParentPath(String fullDirectoryPath, boolean excludeRootPath) {
+
+        if (excludeRootPath) {
+            fullDirectoryPath = excludeRootPath(fullDirectoryPath);
+        }
+
         if (fullDirectoryPath == null || fullDirectoryPath.isEmpty() || fullDirectoryPath.equals("/")) {
             return "";
         }
@@ -54,5 +59,17 @@ public class PathUtils {
         }
         log.info("name={}", name);
         return name;
+    }
+
+    public static String getFullPathFromRootAndDestination(String userRootPath, String pathToResource) {
+        if (pathToResource.startsWith("/")) {
+            return userRootPath.concat(pathToResource);
+        } else {
+            return userRootPath.concat("/").concat(pathToResource);
+        }
+    }
+
+    public static String excludeRootPath(String originalPath) {
+        return originalPath.substring(originalPath.indexOf("/"));
     }
 }

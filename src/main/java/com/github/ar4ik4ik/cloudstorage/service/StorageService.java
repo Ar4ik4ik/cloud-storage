@@ -16,7 +16,7 @@ public interface StorageService {
 
     ResourceInfoResponseDto moveResource(String from, String to);
 
-    List<ResourceInfoResponseDto> searchResourcesByQuery(String query);
+    List<ResourceInfoResponseDto> searchResourcesByQuery(String query, String rootPath);
 
     List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, String resourcePath);
 
