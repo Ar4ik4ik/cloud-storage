@@ -24,6 +24,8 @@ import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.*;
 @RequiredArgsConstructor
 public class StorageServiceImpl implements StorageService {
 
+    private final String ROOT_DIRECTORY_PATH_PATTERN_FOR_USER = "user-%s-files/";
+
     private final DirectoryDownloadStrategyImpl directoryDownloadStrategyImpl;
     private final FileDownloadStrategyImpl fileDownloadStrategyImpl;
 
@@ -50,6 +52,11 @@ public class StorageServiceImpl implements StorageService {
                 .path(getParentPath(directoryPath, true))
                 .type(DIRECTORY.name())
                 .build();
+    }
+
+    @Override
+    public void createRootDirectoryForUser(Integer userId) {
+        repository.createEmptyDirectory(String.format(ROOT_DIRECTORY_PATH_PATTERN_FOR_USER, userId));
     }
 
     @Override

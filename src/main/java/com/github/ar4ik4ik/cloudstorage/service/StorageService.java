@@ -23,4 +23,6 @@ public interface StorageService {
     List<ResourceInfoResponseDto> getDirectoryInfo(String directoryPath);
 
     ResourceInfoResponseDto createDirectory(String directoryPath);
+
+    void createRootDirectoryForUser(Integer userId);
 }

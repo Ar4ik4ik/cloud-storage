@@ -30,14 +30,14 @@ public class AuthController {
     }
 
     @PostMapping(path = "/sign-up")
-    public ResponseEntity<AuthResponseDto> signUp(@RequestBody SignUpRequestDto requestDto) {
-        service.registerUser(requestDto);
+    public ResponseEntity<AuthResponseDto> signUp(@RequestBody SignUpRequestDto requestDto, HttpServletRequest request, HttpServletResponse response) {
+        service.registerUser(requestDto, request, response);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new AuthResponseDto(requestDto.username()));
     }
 
-    @PostMapping(path = "/logout")
+    @PostMapping(path = "/sign-out")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
