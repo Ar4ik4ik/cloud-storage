@@ -86,7 +86,7 @@ public class StorageServiceImpl implements StorageService {
                 .name(extractNameFromPath(from))
                 .path(to)
                 .type(folder ? DIRECTORY.name() : FILE.name())
-                .size(folder ? getBytesCount(to) : null)
+                .size(folder ? null : getBytesCount(to))
                 .build();
     }
 
@@ -153,7 +153,7 @@ public class StorageServiceImpl implements StorageService {
                     uploadedResources.add(ResourceInfoResponseDto.builder()
                             .name(directory)
                             .path(getParentPath(currentDirectory))
-                            .size(0L) // directories always would be with type=application/x-directory and size=0 (S3 specifically logic)
+                            .size(null) // directories always would be with type=application/x-directory and size=0 (S3 specifically logic)
                             .type(DIRECTORY.name())
                             .build());
                     createdDirectories.add(directory);
