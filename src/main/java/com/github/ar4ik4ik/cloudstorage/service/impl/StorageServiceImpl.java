@@ -12,8 +12,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 import static com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
 import static com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto.ResourceType.FILE;
@@ -32,7 +37,7 @@ public class StorageServiceImpl implements StorageService {
     private final S3Dao repository;
 
     @Override
-        public List<ResourceInfoResponseDto> getDirectoryInfo(String directoryPath) {
+    public List<ResourceInfoResponseDto> getDirectoryInfo(String directoryPath) {
         return repository.getListObjectsByPath(directoryPath, false, false)
                 .stream()
                 .map(obj -> ResourceInfoResponseDto.builder()
@@ -101,8 +106,8 @@ public class StorageServiceImpl implements StorageService {
     public List<ResourceInfoResponseDto> searchResourcesByQuery(String query, String rootPath) {
         var allObjects = repository.getListObjectsByPath(rootPath, true, true);
         var filteredObjects = allObjects.stream()
-                .filter(obj -> extractNameFromPath(obj.objectName()).toLowerCase()
-                        .contains(query.toLowerCase())).toList();
+                .filter(obj -> extractNameFromPath(obj.objectName())
+                        .toLowerCase().contains(query.toLowerCase())).toList();
         return filteredObjects.stream()
                 .map(obj -> ResourceInfoResponseDto.builder()
                         .name(extractNameFromPath(obj.objectName()))
@@ -115,57 +120,67 @@ public class StorageServiceImpl implements StorageService {
 
     @SneakyThrows
     @Override
-    public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, String path) {
+    public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, String uploadingPath) {
         List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
-        // if already exist do nothing, same logic if no directories in the path
-        addDirectoriesToStorageRecursive(excludeRootPath(path), uploadedResources);
+        Set<String> collectedDirectoriesFromInputFiles = collectDirectoriesFromInputFiles(files, uploadingPath);
+        uploadDirectories(collectedDirectoriesFromInputFiles, uploadedResources, getRootPath(uploadingPath));
 
         for (MultipartFile file : files) {
-            ResourceInfo resourceInfo = ResourceInfo.create(path, file);
-            addFileToStorage(resourceInfo, uploadedResources);
+            ResourceInfo resourceInfo = ResourceInfo.create(uploadingPath, file);
+            uploadFile(resourceInfo, uploadedResources);
         }
         return uploadedResources;
     }
 
-    private void addFileToStorage(ResourceInfo resourceInfo, List<ResourceInfoResponseDto> uploadedResources) throws IOException {
+    private void uploadDirectories(Set<String> collectedDirectoriesFromInputFiles,
+                                   List<ResourceInfoResponseDto> resourcesToUpload, String rootPath) {
+        collectedDirectoriesFromInputFiles.forEach(directory -> {
+                    repository.createEmptyDirectory(rootPath.concat(directory));
+
+                    resourcesToUpload.add(ResourceInfoResponseDto.builder()
+                            .name(extractNameFromPath(directory))
+                            .path(getParentPath(directory, false))
+                            .type(DIRECTORY.name())
+                            .build());
+                }
+        );
+    }
+
+    private Set<String> collectDirectoriesFromInputFiles(MultipartFile[] files, String uploadingPath) {
+        Set<String> collectedDirectoriesFromInputFiles = new HashSet<>();
+
+        for (MultipartFile file : files) {
+            var resourceInfo = ResourceInfo.create(uploadingPath, file);
+            String parentDirectoryPathForFile = resourceInfo.getParentDirectoryPathForFile();
+
+            Path filePath = Path.of(parentDirectoryPathForFile);
+            Path parentPath = filePath.getParent();
+
+            while (parentPath != null) {
+                collectedDirectoriesFromInputFiles.add(parentPath.toString()
+                        .replace(File.separator, "/")
+                        .concat("/"));
+                parentPath = parentPath.getParent();
+            }
+        }
+        log.info("Collected directories: {}", collectedDirectoriesFromInputFiles);
+        return collectedDirectoriesFromInputFiles;
+    }
+
+    private void uploadFile(ResourceInfo resourceInfo, List<ResourceInfoResponseDto> resourcesToUpload) throws IOException {
         try (var inputStream = new BufferedInputStream(resourceInfo.getMultipartFile().getInputStream())) {
-            // TODO: need keyAlreadyExist exception catching
+
             repository.uploadObject(resourceInfo.getFullMinioPath(),
                     resourceInfo.getMultipartFile().getContentType(),
                     inputStream,
                     resourceInfo.getMultipartFile().getSize());
 
-            uploadedResources.add(ResourceInfoResponseDto.builder()
+            resourcesToUpload.add(ResourceInfoResponseDto.builder()
                     .name(resourceInfo.getFilename())
-                    .path(resourceInfo.getDirectoryPathForFile())
+                    .path(resourceInfo.getParentDirectoryPathForFile())
                     .size(resourceInfo.getMultipartFile().getSize())
                     .type(FILE.name())
                     .build());
-        }
-    }
-
-    private void addDirectoriesToStorageRecursive(String directoryPathForFile, List<ResourceInfoResponseDto> uploadedResources) {
-
-        Set<String> createdDirectories = new HashSet<>();
-        String[] directories = directoryPathForFile.split("/");
-        String currentDirectory = "";
-        log.info("directories={}", Arrays.stream(directories).toList());
-
-        for (String directory : directories) {
-            if (!directory.isEmpty()) {
-                currentDirectory = currentDirectory.concat(directory).concat("/");
-                if (!createdDirectories.contains(directory)) {
-                    repository.createEmptyDirectory(currentDirectory); // TODO: need keyAlreadyExistException handling if directory already exists
-
-                    uploadedResources.add(ResourceInfoResponseDto.builder()
-                            .name(directory)
-                            .path(getParentPath(currentDirectory, true))
-                            .size(null) // directories always would be with type=application/x-directory and size=0 (S3 specifically logic)
-                            .type(DIRECTORY.name())
-                            .build());
-                    createdDirectories.add(directory);
-                }
-            }
         }
     }
 
