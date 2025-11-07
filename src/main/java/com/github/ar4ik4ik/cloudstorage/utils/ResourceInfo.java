@@ -10,27 +10,27 @@ import java.util.Objects;
 @Getter
 public class ResourceInfo {
 
-    private String originalFilename;
-    private String normalizedFilename;
+    private String relativePath;
     private String fullMinioPath;
-    private String directoryPathForFile;
+    private String parentDirectoryPathForFile;
     private String filename;
     private MultipartFile multipartFile;
 
-    public static ResourceInfo create(String normalizedResourcePath, MultipartFile file) {
+    public static ResourceInfo create(String uploadingPath, MultipartFile file) {
         ResourceInfo info = new ResourceInfo();
         info.multipartFile = file;
-        info.originalFilename = Objects.requireNonNull(file.getOriginalFilename());
-        info.normalizedFilename = Paths.get(info.originalFilename).normalize().toString().replace(File.separator, "/");
-        info.fullMinioPath = normalizedResourcePath + info.normalizedFilename;
+        info.relativePath = Objects.requireNonNull(file.getOriginalFilename());
+        info.relativePath = Paths.get(info.relativePath).normalize().toString().replace(File.separator, "/");
+        info.fullMinioPath = uploadingPath + info.relativePath;
 
         int lastSlashIdx = info.fullMinioPath.lastIndexOf("/");
+        int firstSlashIdx = info.fullMinioPath.indexOf("/");
         if (lastSlashIdx != -1) {
-            info.directoryPathForFile = info.fullMinioPath.substring(0, lastSlashIdx + 1);
+            info.parentDirectoryPathForFile = info.fullMinioPath.substring(firstSlashIdx + 1, lastSlashIdx + 1);
             info.filename = info.fullMinioPath.substring(lastSlashIdx + 1);
         } else {
-            info.directoryPathForFile = normalizedResourcePath;
-            info.filename = info.fullMinioPath.substring(normalizedResourcePath.length());
+            info.parentDirectoryPathForFile = uploadingPath;
+            info.filename = info.fullMinioPath.substring(uploadingPath.length());
         }
         return info;
     }
