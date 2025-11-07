@@ -91,6 +91,7 @@ public class MinioDaoImpl implements S3Dao {
                 .bucket(bucket)
                 .prefix(path)
                 .recursive(recursive)
+                .delimiter("/")
                 .build()).iterator();
         var itemStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(storageObjectsIterator,
                         Spliterator.ORDERED), false)
