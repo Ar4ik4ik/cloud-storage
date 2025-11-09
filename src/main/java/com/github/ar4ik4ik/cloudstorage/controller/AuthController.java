@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService service;
+    private final LoginAuthService service;
 
     @PostMapping(path = "/sign-in")
     public ResponseEntity<AuthResponseDto> signIn(@Valid @RequestBody SignInRequestDto requestDto) {
