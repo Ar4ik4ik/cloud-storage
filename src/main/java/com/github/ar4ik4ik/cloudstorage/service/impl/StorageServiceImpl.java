@@ -1,6 +1,7 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
 import com.github.ar4ik4ik.cloudstorage.dao.S3Dao;
+import com.github.ar4ik4ik.cloudstorage.mapper.ResourceMapper;
 import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
 import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
@@ -20,8 +21,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import static com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto.ResourceType.DIRECTORY;
-import static com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto.ResourceType.FILE;
 import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.*;
 
 @Slf4j
@@ -35,28 +34,20 @@ public class StorageServiceImpl implements StorageService {
     private final FileDownloadStrategyImpl fileDownloadStrategyImpl;
 
     private final S3Dao repository;
+    private final ResourceMapper mapper;
 
     @Override
     public List<ResourceInfoResponseDto> getDirectoryInfo(String directoryPath) {
         return repository.getListObjectsByPath(directoryPath, false, false)
                 .stream()
-                .map(obj -> ResourceInfoResponseDto.builder()
-                        .path(getParentPath(obj.objectName(), true))
-                        .name(extractNameFromPath(obj.objectName()))
-                        .size(obj.size())
-                        .type(isFolder(obj.objectName()) ? DIRECTORY.name() : FILE.name())
-                        .build()).toList();
+                .map(mapper::toDirectoryInfoDto)
+                .toList();
     }
 
     @Override
     public ResourceInfoResponseDto createDirectory(String directoryPath) {
-        // TODO: add directories recursive if not exists (bug)
         repository.createEmptyDirectory(directoryPath);
-        return ResourceInfoResponseDto.builder()
-                .name(extractNameFromPath(directoryPath))
-                .path(getParentPath(directoryPath, true))
-                .type(DIRECTORY.name())
-                .build();
+        return mapper.toUploadDirectoryDto(directoryPath);
     }
 
     @Override
@@ -65,14 +56,10 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public ResourceInfoResponseDto getResourceInfo(String path) {
-        try (var obj = repository.getObject(path)) {
-            return ResourceInfoResponseDto.builder()
-                    .name(extractNameFromPath(path))
-                    .size(obj.headers().byteCount())
-                    .type(isFolder(path) ? DIRECTORY.name() : FILE.name())
-                    .path(getParentPath(path, true))
-                    .build();
+    public ResourceInfoResponseDto getResourceInfo(String directoryPath) {
+        try (var obj = repository.getObject(directoryPath)) {
+            return mapper.toDto(directoryPath, obj);
+            // TODO: remove catching (to be realized into repository ????)
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -94,12 +81,8 @@ public class StorageServiceImpl implements StorageService {
         boolean folder = isFolder(from);
         repository.copyObject(from, to, folder);
         repository.removeObject(from, folder);
-        return ResourceInfoResponseDto.builder()
-                .name(extractNameFromPath(from))
-                .path(to)
-                .type(folder ? DIRECTORY.name() : FILE.name())
-                .size(folder ? null : getBytesCount(to))
-                .build();
+        long bytesCount = getBytesCount(to);
+        return mapper.toMoveResourceDto(from, to, bytesCount);
     }
 
     @Override
@@ -109,12 +92,7 @@ public class StorageServiceImpl implements StorageService {
                 .filter(obj -> extractNameFromPath(obj.objectName())
                         .toLowerCase().contains(query.toLowerCase())).toList();
         return filteredObjects.stream()
-                .map(obj -> ResourceInfoResponseDto.builder()
-                        .name(extractNameFromPath(obj.objectName()))
-                        .path(getParentPath(obj.objectName(), true))
-                        .size(obj.size() > 0 ? obj.size() : null)
-                        .type(isFolder(obj.objectName()) ? DIRECTORY.name() : FILE.name())
-                        .build())
+                .map(mapper::toDirectoryInfoDto)
                 .toList();
     }
 
@@ -136,12 +114,7 @@ public class StorageServiceImpl implements StorageService {
                                    List<ResourceInfoResponseDto> resourcesToUpload, String rootPath) {
         collectedDirectoriesFromInputFiles.forEach(directory -> {
                     repository.createEmptyDirectory(rootPath.concat(directory));
-
-                    resourcesToUpload.add(ResourceInfoResponseDto.builder()
-                            .name(extractNameFromPath(directory))
-                            .path(getParentPath(directory, false))
-                            .type(DIRECTORY.name())
-                            .build());
+                    resourcesToUpload.add(mapper.toUploadDirectoryDto(directory));
                 }
         );
     }
@@ -175,12 +148,7 @@ public class StorageServiceImpl implements StorageService {
                     inputStream,
                     resourceInfo.getMultipartFile().getSize());
 
-            resourcesToUpload.add(ResourceInfoResponseDto.builder()
-                    .name(resourceInfo.getFilename())
-                    .path(resourceInfo.getParentDirectoryPathForFile())
-                    .size(resourceInfo.getMultipartFile().getSize())
-                    .type(FILE.name())
-                    .build());
+            resourcesToUpload.add(mapper.toUploadFileDto(resourceInfo));
         }
     }
 
