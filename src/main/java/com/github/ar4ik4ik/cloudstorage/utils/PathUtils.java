@@ -70,7 +70,7 @@ public class PathUtils {
     }
 
     public static String excludeRootPath(String originalPath) {
-        return originalPath.substring(originalPath.indexOf("/"));
+        return originalPath.substring(originalPath.indexOf("/") + 1);
     }
 
     public static String getRootPath(String originalPath) {

@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.excludeRootPath;
+
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -32,7 +35,7 @@ public class DirectoryDownloadStrategyImpl implements DownloadStrategy {
                 for (Item item: storageItems) {
                     var storageObject = repository.getObject(item.objectName());
                     try (BufferedInputStream inputStream = new BufferedInputStream(storageObject)) {
-                        var zipEntry = new ZipEntry(item.objectName());
+                        var zipEntry = new ZipEntry(excludeRootPath(item.objectName()));
 
                         zipOutputStream.putNextEntry(zipEntry);
                         IOUtils.copy(inputStream, zipOutputStream, 8192);
