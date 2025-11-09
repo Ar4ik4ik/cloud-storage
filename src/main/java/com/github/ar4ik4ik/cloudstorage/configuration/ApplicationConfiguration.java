@@ -11,7 +11,7 @@ import org.springframework.session.web.http.DefaultCookieSerializer;
 
 @Configuration
 @RequiredArgsConstructor (onConstructor = @__(@Lazy))
-public class ApplicationConfig {
+public class ApplicationConfiguration {
 
     private final MinioProperties minioProperties;
 
