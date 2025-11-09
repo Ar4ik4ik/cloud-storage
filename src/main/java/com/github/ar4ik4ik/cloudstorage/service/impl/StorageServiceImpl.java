@@ -1,6 +1,8 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
 import com.github.ar4ik4ik.cloudstorage.dao.S3Dao;
+import com.github.ar4ik4ik.cloudstorage.exception.ObjectAlreadyExistException;
+import com.github.ar4ik4ik.cloudstorage.exception.ObjectNotFoundException;
 import com.github.ar4ik4ik.cloudstorage.mapper.ResourceMapper;
 import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
@@ -33,12 +35,15 @@ public class StorageServiceImpl implements StorageService {
     private final DirectoryDownloadStrategyImpl directoryDownloadStrategyImpl;
     private final FileDownloadStrategyImpl fileDownloadStrategyImpl;
 
-    private final S3Dao repository;
+    private final S3Dao dao;
     private final ResourceMapper mapper;
 
     @Override
     public List<ResourceInfoResponseDto> getDirectoryInfo(String directoryPath) {
-        return repository.getListObjectsByPath(directoryPath, false, false)
+        if (!dao.isObjectExists(directoryPath)) {
+            throw new ObjectNotFoundException();
+        }
+        return dao.getListObjectsByPath(directoryPath, false, false)
                 .stream()
                 .map(mapper::toDirectoryInfoDto)
                 .toList();
@@ -46,20 +51,22 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public ResourceInfoResponseDto createDirectory(String directoryPath) {
-        repository.createEmptyDirectory(directoryPath);
+        if (!dao.isObjectExists(getParentPath(directoryPath, false))) {
+            throw new ObjectNotFoundException();
+        }
+        dao.createEmptyDirectory(directoryPath);
         return mapper.toUploadDirectoryDto(directoryPath);
     }
 
     @Override
     public void createRootDirectoryForUser(Integer userId) {
-        repository.createEmptyDirectory(String.format(ROOT_DIRECTORY_PATH_PATTERN_FOR_USER, userId));
+        dao.createEmptyDirectory(String.format(ROOT_DIRECTORY_PATH_PATTERN_FOR_USER, userId));
     }
 
     @Override
     public ResourceInfoResponseDto getResourceInfo(String directoryPath) {
-        try (var obj = repository.getObject(directoryPath)) {
+        try (var obj = dao.getObject(directoryPath)) {
             return mapper.toDto(directoryPath, obj);
-            // TODO: remove catching (to be realized into repository ????)
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -67,27 +74,40 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public void deleteResource(String path) {
-        repository.removeObject(path, isFolder(path));
+        if (!dao.isObjectExists(path)) {
+            throw new ObjectNotFoundException();
+        }
+
+        dao.removeObject(path, isFolder(path));
     }
 
     @Override
     public StreamingResponseBody downloadResource(String path) {
+        if (!dao.isObjectExists(path)) {
+            throw new ObjectNotFoundException();
+        }
+
         return isFolder(path) ? directoryDownloadStrategyImpl.download(path)
                 : fileDownloadStrategyImpl.download(path);
     }
 
     @Override
     public ResourceInfoResponseDto moveResource(String from, String to) {
+        if (dao.isObjectExists(to)) {
+            throw new ObjectAlreadyExistException();
+        }
+
         boolean folder = isFolder(from);
-        repository.copyObject(from, to, folder);
-        repository.removeObject(from, folder);
+
+        dao.copyObject(from, to, folder);
+        dao.removeObject(from, folder);
         long bytesCount = getBytesCount(to);
         return mapper.toMoveResourceDto(from, to, bytesCount);
     }
 
     @Override
     public List<ResourceInfoResponseDto> searchResourcesByQuery(String query, String rootPath) {
-        var allObjects = repository.getListObjectsByPath(rootPath, true, true);
+        var allObjects = dao.getListObjectsByPath(rootPath, true, true);
         var filteredObjects = allObjects.stream()
                 .filter(obj -> extractNameFromPath(obj.objectName())
                         .toLowerCase().contains(query.toLowerCase())).toList();
@@ -113,7 +133,7 @@ public class StorageServiceImpl implements StorageService {
     private void uploadDirectories(Set<String> collectedDirectoriesFromInputFiles,
                                    List<ResourceInfoResponseDto> resourcesToUpload, String rootPath) {
         collectedDirectoriesFromInputFiles.forEach(directory -> {
-                    repository.createEmptyDirectory(rootPath.concat(directory));
+                    dao.createEmptyDirectory(rootPath.concat(directory));
                     resourcesToUpload.add(mapper.toUploadDirectoryDto(directory));
                 }
         );
@@ -124,7 +144,7 @@ public class StorageServiceImpl implements StorageService {
 
         for (MultipartFile file : files) {
             var resourceInfo = ResourceInfo.create(uploadingPath, file);
-            String parentDirectoryPathForFile = resourceInfo.getParentDirectoryPathForFile();
+            String parentDirectoryPathForFile = resourceInfo.getRelativePath();
 
             Path filePath = Path.of(parentDirectoryPathForFile);
             Path parentPath = filePath.getParent();
@@ -142,8 +162,7 @@ public class StorageServiceImpl implements StorageService {
 
     private void uploadFile(ResourceInfo resourceInfo, List<ResourceInfoResponseDto> resourcesToUpload) throws IOException {
         try (var inputStream = new BufferedInputStream(resourceInfo.getMultipartFile().getInputStream())) {
-
-            repository.uploadObject(resourceInfo.getFullMinioPath(),
+            dao.uploadObject(resourceInfo.getFullMinioPath(),
                     resourceInfo.getMultipartFile().getContentType(),
                     inputStream,
                     resourceInfo.getMultipartFile().getSize());
@@ -153,6 +172,6 @@ public class StorageServiceImpl implements StorageService {
     }
 
     private long getBytesCount(String filePath) {
-        return repository.getObject(filePath).headers().byteCount();
+        return dao.getObject(filePath).headers().byteCount();
     }
 }

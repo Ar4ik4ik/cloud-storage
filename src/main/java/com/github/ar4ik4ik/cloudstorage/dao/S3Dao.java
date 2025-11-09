@@ -1,6 +1,5 @@
 package com.github.ar4ik4ik.cloudstorage.dao;
 
-import com.github.ar4ik4ik.cloudstorage.exception.ObjectNotFoundException;
 import com.github.ar4ik4ik.cloudstorage.exception.StorageException;
 import io.minio.GetObjectResponse;
 import io.minio.messages.Item;
@@ -12,7 +11,7 @@ public interface S3Dao {
 
     void uploadObject (String path, String contentType, InputStream inputStream, long objectSize) throws StorageException;
 
-    GetObjectResponse getObject(String path) throws StorageException, ObjectNotFoundException;
+    GetObjectResponse getObject(String path) throws StorageException;
 
     void createEmptyDirectory(String path) throws StorageException;
 
@@ -21,4 +20,6 @@ public interface S3Dao {
     void copyObject(String from, String to, boolean isFolder) throws StorageException;
 
     void removeObject(String path, boolean isFolder) throws StorageException;
+
+    boolean isObjectExists(String path);
 }

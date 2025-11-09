@@ -127,6 +127,19 @@ public class MinioDaoImpl implements S3Dao {
         }
     }
 
+    @Override
+    public boolean isObjectExists(String path) {
+        try {
+            minioClient.statObject(StatObjectArgs.builder()
+                            .bucket(bucket)
+                            .object(path)
+                    .build());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private void removeFile(String path) throws StorageException {
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()
@@ -172,6 +185,7 @@ public class MinioDaoImpl implements S3Dao {
                             .bucket(bucket)
                             .object(from)
                             .build())
+                    .headers(Map.of("If-None-Match", "*"))
                     .build());
         } catch (Exception e) {
             throw mapExceptionToDomain("copyFile", from, e);
@@ -189,6 +203,7 @@ public class MinioDaoImpl implements S3Dao {
                                 .bucket(bucket)
                                 .object(object.objectName())
                                 .build())
+                        .headers(Map.of("If-None-Match", "*"))
                         .build());
             } catch (Exception e) {
                 throw mapExceptionToDomain("copyFolder", from, e);

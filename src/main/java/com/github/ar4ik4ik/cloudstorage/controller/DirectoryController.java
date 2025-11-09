@@ -25,12 +25,12 @@ public class DirectoryController {
 
     private final StorageService service;
 
-    @GetMapping(params = "path")
+    @GetMapping
     public ResponseEntity<List<ResourceInfoResponseDto>> getDirectoryInfo(@RequestParam(name = "path") @Valid ResourcePath path, @AuthenticationPrincipal StorageUserDetails userDetails) {
         return ResponseEntity.ok(service.getDirectoryInfo(getFullPathFromRootAndDestination(userDetails.getUserRootDirectory(), path.path())));
     }
 
-    @PostMapping(params = "path")
+    @PostMapping
     public ResponseEntity<ResourceInfoResponseDto> createDirectory(@RequestParam(name = "path") @Valid ResourcePath path, @AuthenticationPrincipal StorageUserDetails userDetails) {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequestUri()

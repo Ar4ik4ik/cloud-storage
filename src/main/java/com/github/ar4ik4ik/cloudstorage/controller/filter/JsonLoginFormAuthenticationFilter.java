@@ -60,6 +60,6 @@ public class JsonLoginFormAuthenticationFilter extends AbstractAuthenticationPro
                                               AuthenticationException failed) throws IOException {
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write("{ \"message\": \"Authentication failed: " + failed.getMessage() + "\" }");
+        response.getWriter().write("{ \"message\": \"Authentication failed: User doesn't exists or password not match\" }");
     }
 }
