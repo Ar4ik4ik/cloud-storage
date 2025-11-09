@@ -8,6 +8,9 @@ public class FileValidator implements ConstraintValidator<ValidFiles, MultipartF
 
     @Override
     public boolean isValid(MultipartFile[] files, ConstraintValidatorContext constraintValidatorContext) {
+        if (files == null || files.length == 0) {
+            return false;
+        }
         for (MultipartFile file: files) {
             if (file == null) {
                 return false;

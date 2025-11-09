@@ -1,9 +1,9 @@
 package com.github.ar4ik4ik.cloudstorage.model.dto;
 
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 
-public record SignInRequestDto(@NotEmpty @Min(3) String username,
-                               @NotEmpty @Min(8) String password) {
+public record SignInRequestDto(@NotEmpty @Size(min = 3) String username,
+                               @NotEmpty @Size(min = 8) String password) {
 }
