@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -19,6 +20,7 @@ import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getFullPathFromRo
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/directory")
+@Validated
 public class DirectoryController {
 
     private final StorageService service;

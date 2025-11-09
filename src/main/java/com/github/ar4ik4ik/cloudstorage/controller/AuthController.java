@@ -3,9 +3,10 @@ package com.github.ar4ik4ik.cloudstorage.controller;
 import com.github.ar4ik4ik.cloudstorage.model.dto.AuthResponseDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.SignInRequestDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.SignUpRequestDto;
-import com.github.ar4ik4ik.cloudstorage.service.AuthService;
+import com.github.ar4ik4ik.cloudstorage.service.impl.LoginAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,13 +25,13 @@ public class AuthController {
     private final AuthService service;
 
     @PostMapping(path = "/sign-in")
-    public ResponseEntity<AuthResponseDto> signIn(@RequestBody SignInRequestDto requestDto) {
+    public ResponseEntity<AuthResponseDto> signIn(@Valid @RequestBody SignInRequestDto requestDto) {
         service.authenticateUser(requestDto);
         return ResponseEntity.ok(new AuthResponseDto(requestDto.username()));
     }
 
     @PostMapping(path = "/sign-up")
-    public ResponseEntity<AuthResponseDto> signUp(@RequestBody SignUpRequestDto requestDto, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<AuthResponseDto> signUp(@Valid @RequestBody SignUpRequestDto requestDto, HttpServletRequest request, HttpServletResponse response) {
         service.registerUser(requestDto, request, response);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
