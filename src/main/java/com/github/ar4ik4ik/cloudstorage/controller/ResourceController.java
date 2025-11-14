@@ -21,7 +21,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getFullPathFromRootAndDestination;
+import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getParentPath;
 
 @RequestMapping("/api/resource")
 @RestController
@@ -32,51 +32,52 @@ public class ResourceController {
     private final StorageServiceImpl service;
 
     @GetMapping
-    public ResponseEntity<ResourceInfoResponseDto> getResourceInfo(@RequestParam(name = "path") @Valid ResourcePath path, @AuthenticationPrincipal StorageUserDetails userDetails) {
-        return ResponseEntity.ok(service.getResourceInfo(getFullPathFromRootAndDestination(userDetails.getUserRootDirectory(), getFullPathFromRootAndDestination(userDetails.getUserRootDirectory(), path.path()))));
+    public ResponseEntity<ResourceInfoResponseDto> getResourceInfo(@RequestParam(name = "path") @Valid ResourcePath path) {
+        return ResponseEntity.ok(service.getResourceInfo(path.path()));
     }
 
     @DeleteMapping
-    public ResponseEntity<?> deleteResource(@RequestParam(name = "path") @Valid ResourcePath path, @AuthenticationPrincipal StorageUserDetails userDetails) {
-        service.deleteResource(getFullPathFromRootAndDestination(userDetails.getUserRootDirectory(), path.path()));
+    public ResponseEntity<?> deleteResource(@RequestParam(name = "path") @Valid ResourcePath path) {
+        service.deleteResource(path.path());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping(path = "download")
-    public ResponseEntity<StreamingResponseBody> downloadResource(@RequestParam(name = "path") @Valid ResourcePath path, @AuthenticationPrincipal StorageUserDetails userDetails) {
+    public ResponseEntity<StreamingResponseBody> downloadResource(@RequestParam(name = "path") @Valid ResourcePath path) {
         String filename = PathUtils.getFilenameForDownload(path.path());
         return ResponseEntity
                 .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''%s".formatted(filename))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''%s"
+                        .formatted(filename))
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(service.downloadResource(getFullPathFromRootAndDestination(userDetails.getUserRootDirectory(), path.path())));
+                .body(service.downloadResource(path.path()));
     }
 
     @GetMapping(path = "move")
     public ResponseEntity<ResourceInfoResponseDto> moveResource(@RequestParam(name = "from") @Valid ResourcePath sourcePath,
-                                                                @RequestParam(name = "to") @Valid ResourcePath targetPath, @AuthenticationPrincipal StorageUserDetails userDetails) {
+                                                                @RequestParam(name = "to") @Valid ResourcePath targetPath) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(service.moveResource(getFullPathFromRootAndDestination(userDetails.getUserRootDirectory(), sourcePath.path()),
-                        getFullPathFromRootAndDestination(userDetails.getUserRootDirectory(), targetPath.path())));
+                .body(service.moveResource(sourcePath.path(), targetPath.path()));
     }
 
     @GetMapping(path = "search")
     public ResponseEntity<?> searchResource(@RequestParam(name = "query") @Valid ResourcePath searchQuery,
                                             @AuthenticationPrincipal StorageUserDetails userDetails) {
-        return ResponseEntity.ok(service.searchResourcesByQuery(searchQuery.path(), userDetails.getUserRootDirectory()));
+        return ResponseEntity.ok(service.searchResourcesByQuery(
+                searchQuery.path(), userDetails.getUserRootDirectory()));
     }
 
     @PostMapping
-    public ResponseEntity<List<ResourceInfoResponseDto>> uploadResource(
-            @RequestParam(name = "path") @Valid ResourcePath path,
-            @RequestParam(name = "object") @ValidFiles MultipartFile[] files, @AuthenticationPrincipal StorageUserDetails userDetails) {
+    public ResponseEntity<List<ResourceInfoResponseDto>> uploadResource(@RequestParam(name = "path") @Valid ResourcePath path,
+            @RequestParam(name = "object") @ValidFiles MultipartFile[] files) {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequestUri()
                 .path("/api/resource")
-                .queryParam("path", path.path())
+                .queryParam("path", getParentPath(path.path(), true))
                 .build().toUri();
+
         return ResponseEntity.created(location)
-                .body(service.uploadResource(files, getFullPathFromRootAndDestination(userDetails.getUserRootDirectory(), path.path())));
+                .body(service.uploadResource(files, path.path()));
     }
 }

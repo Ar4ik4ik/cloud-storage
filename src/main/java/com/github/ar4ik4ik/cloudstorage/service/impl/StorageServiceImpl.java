@@ -1,5 +1,6 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
+import com.github.ar4ik4ik.cloudstorage.aop.PathEnrich;
 import com.github.ar4ik4ik.cloudstorage.dao.S3Dao;
 import com.github.ar4ik4ik.cloudstorage.exception.ObjectAlreadyExistException;
 import com.github.ar4ik4ik.cloudstorage.exception.ObjectNotFoundException;
@@ -39,7 +40,8 @@ public class StorageServiceImpl implements StorageService {
     private final ResourceMapper mapper;
 
     @Override
-    public List<ResourceInfoResponseDto> getDirectoryInfo(String directoryPath) {
+    public List<ResourceInfoResponseDto> getDirectoryInfo(@PathEnrich String directoryPath) {
+        log.debug("Method calls with directoryPath = {}", directoryPath);
         if (!dao.isObjectExists(directoryPath)) {
             throw new ObjectNotFoundException();
         }
@@ -50,7 +52,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public ResourceInfoResponseDto createDirectory(String directoryPath) {
+    public ResourceInfoResponseDto createDirectory(@PathEnrich String directoryPath) {
         if (!dao.isObjectExists(getParentPath(directoryPath, false))) {
             throw new ObjectNotFoundException();
         }
@@ -64,7 +66,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public ResourceInfoResponseDto getResourceInfo(String directoryPath) {
+    public ResourceInfoResponseDto getResourceInfo(@PathEnrich String directoryPath) {
         try (var obj = dao.getObject(directoryPath)) {
             return mapper.toDto(directoryPath, obj);
         } catch (IOException e) {
@@ -73,7 +75,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public void deleteResource(String path) {
+    public void deleteResource(@PathEnrich String path) {
         if (!dao.isObjectExists(path)) {
             throw new ObjectNotFoundException();
         }
@@ -82,7 +84,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public StreamingResponseBody downloadResource(String path) {
+    public StreamingResponseBody downloadResource(@PathEnrich String path) {
         if (!dao.isObjectExists(path)) {
             throw new ObjectNotFoundException();
         }
@@ -92,7 +94,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public ResourceInfoResponseDto moveResource(String from, String to) {
+    public ResourceInfoResponseDto moveResource(@PathEnrich String from, @PathEnrich String to) {
         if (dao.isObjectExists(to)) {
             throw new ObjectAlreadyExistException();
         }
@@ -118,7 +120,7 @@ public class StorageServiceImpl implements StorageService {
 
     @SneakyThrows
     @Override
-    public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, String uploadingPath) {
+    public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, @PathEnrich String uploadingPath) {
         List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
         Set<String> collectedDirectoriesFromInputFiles = collectDirectoriesFromInputFiles(files, uploadingPath);
         uploadDirectories(collectedDirectoriesFromInputFiles, uploadedResources, getRootPath(uploadingPath));

@@ -53,6 +53,8 @@ logging:
     org.springframework.session: TRACE
     org.springframework.data.redis: TRACE
     org.springframework.security: TRACE
+    org.springframework.web: DEBUG
+    com.github.ar4ik4ik.cloudstorage: DEBUG
 minio:
   url: http://localhost:9000
   accessKey: cloud-storage-application
