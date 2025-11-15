@@ -60,3 +60,6 @@ minio:
   accessKey: cloud-storage-application
   secretKey: cloud-storage-application
   bucket: user-files
+springdoc:
+  paths-to-match:
+    - /api/**
