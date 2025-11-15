@@ -43,3 +43,7 @@ build/
 /data/.minio.sys/config/config.json/xl.meta
 /data/.minio.sys/config/iam/format.json/xl.meta
 /data/.minio.sys/pool.bin/xl.meta
+/redisdata/
+/data/
+/config/
+/.mvn/
