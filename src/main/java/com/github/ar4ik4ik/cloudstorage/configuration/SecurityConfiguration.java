@@ -1,7 +1,7 @@
 package com.github.ar4ik4ik.cloudstorage.configuration;
 
 
-import com.github.ar4ik4ik.cloudstorage.controller.filter.JsonLoginFormAuthenticationFilter;
+import com.github.ar4ik4ik.cloudstorage.security.filter.JsonLoginFormAuthenticationFilter;
 import com.github.ar4ik4ik.cloudstorage.service.impl.DatabaseUserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
