@@ -20,7 +20,8 @@ import java.util.Arrays;
 @Slf4j
 public class UserPathEnrichAspect {
 
-    @Pointcut("within(com.github.ar4ik4ik.cloudstorage.service.StorageService+) && execution(* * (.., @com.github.ar4ik4ik.cloudstorage.aop.PathEnrich (*), ..))")
+    @Pointcut("within(com.github.ar4ik4ik.cloudstorage.service.StorageService+) " +
+            "&& execution(* * (.., @com.github.ar4ik4ik.cloudstorage.aop.PathEnrich (*), ..))")
     public void pathEnrichAnnotatedParams() {}
 
     @Around("pathEnrichAnnotatedParams()")

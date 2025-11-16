@@ -1,4 +1,4 @@
-package com.github.ar4ik4ik.cloudstorage.controller.filter;
+package com.github.ar4ik4ik.cloudstorage.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.ar4ik4ik.cloudstorage.model.dto.AuthResponseDto;
