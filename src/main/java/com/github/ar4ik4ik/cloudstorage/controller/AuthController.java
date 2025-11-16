@@ -4,7 +4,8 @@ import com.github.ar4ik4ik.cloudstorage.model.dto.AuthResponseDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.MessageDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.SignInRequestDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.SignUpRequestDto;
-import com.github.ar4ik4ik.cloudstorage.service.impl.LoginAuthService;
+import com.github.ar4ik4ik.cloudstorage.service.impl.UsernamePasswordLoginService;
+import com.github.ar4ik4ik.cloudstorage.service.impl.UsernamePasswordRegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,7 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Аутентификация", description = "API для регистрации, входа и выхода пользователей из системы")
 public class AuthController {
 
-    private final LoginAuthService service;
+    private final UsernamePasswordRegistrationService registrationService;
+    private final UsernamePasswordLoginService loginService;
 
     @Operation(
             summary = "Вход пользователя",
@@ -56,7 +58,7 @@ public class AuthController {
     )
     @PostMapping(path = "/sign-in")
     public ResponseEntity<AuthResponseDto> signIn(@Valid @org.springframework.web.bind.annotation.RequestBody SignInRequestDto requestDto) {
-        service.authenticateUser(requestDto);
+        loginService.processLogin(requestDto);
         return ResponseEntity.ok(new AuthResponseDto(requestDto.username()));
     }
 
@@ -86,7 +88,7 @@ public class AuthController {
     )
     @PostMapping(path = "/sign-up")
     public ResponseEntity<AuthResponseDto> signUp(@Valid @org.springframework.web.bind.annotation.RequestBody SignUpRequestDto requestDto, HttpServletRequest request, HttpServletResponse response) {
-        service.registerUser(requestDto, request, response);
+        registrationService.registerUser(requestDto, request, response);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new AuthResponseDto(requestDto.username()));
@@ -115,5 +117,4 @@ public class AuthController {
         }
         return ResponseEntity.noContent().build();
     }
-
 }
