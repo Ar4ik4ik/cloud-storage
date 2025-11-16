@@ -4,8 +4,8 @@ import com.github.ar4ik4ik.cloudstorage.model.dto.AuthResponseDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.MessageDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.SignInRequestDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.SignUpRequestDto;
-import com.github.ar4ik4ik.cloudstorage.service.impl.UsernamePasswordLoginService;
-import com.github.ar4ik4ik.cloudstorage.service.impl.UsernamePasswordRegistrationService;
+import com.github.ar4ik4ik.cloudstorage.service.impl.LoginServiceImpl;
+import com.github.ar4ik4ik.cloudstorage.service.impl.RegistrationServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,8 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Аутентификация", description = "API для регистрации, входа и выхода пользователей из системы")
 public class AuthController {
 
-    private final UsernamePasswordRegistrationService registrationService;
-    private final UsernamePasswordLoginService loginService;
+    private final RegistrationServiceImpl registrationService;
+    private final LoginServiceImpl loginService;
 
     @Operation(
             summary = "Вход пользователя",

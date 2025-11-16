@@ -22,7 +22,7 @@ import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
-public class UsernamePasswordRegistrationService implements RegistrationService {
+public class RegistrationServiceImpl implements RegistrationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthorityRepository authorityRepository;
