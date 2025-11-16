@@ -4,12 +4,12 @@ import com.github.ar4ik4ik.cloudstorage.aop.PathEnrich;
 import com.github.ar4ik4ik.cloudstorage.dao.S3Dao;
 import com.github.ar4ik4ik.cloudstorage.exception.ObjectAlreadyExistException;
 import com.github.ar4ik4ik.cloudstorage.exception.ObjectNotFoundException;
+import com.github.ar4ik4ik.cloudstorage.exception.StorageException;
 import com.github.ar4ik4ik.cloudstorage.mapper.ResourceMapper;
 import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
 import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,7 +41,6 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public List<ResourceInfoResponseDto> getDirectoryInfo(@PathEnrich String directoryPath) {
-        log.debug("Method calls with directoryPath = {}", directoryPath);
         if (!dao.isObjectExists(directoryPath)) {
             throw new ObjectNotFoundException();
         }
@@ -70,7 +69,7 @@ public class StorageServiceImpl implements StorageService {
         try (var obj = dao.getObject(directoryPath)) {
             return mapper.toDto(directoryPath, obj);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new StorageException(e);
         }
     }
 
@@ -102,7 +101,11 @@ public class StorageServiceImpl implements StorageService {
         boolean folder = isFolder(from);
 
         dao.copyObject(from, to, folder);
-        dao.removeObject(from, folder);
+        try {
+            dao.removeObject(from, folder);
+        } catch (StorageException e) {
+            dao.removeObject(to, folder);
+        }
         long bytesCount = getBytesCount(to);
         return mapper.toMoveResourceDto(from, to, bytesCount);
     }
@@ -118,7 +121,6 @@ public class StorageServiceImpl implements StorageService {
                 .toList();
     }
 
-    @SneakyThrows
     @Override
     public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, @PathEnrich String uploadingPath) {
         List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
@@ -127,7 +129,11 @@ public class StorageServiceImpl implements StorageService {
 
         for (MultipartFile file : files) {
             ResourceInfo resourceInfo = ResourceInfo.create(uploadingPath, file);
-            uploadFile(resourceInfo, uploadedResources);
+            try {
+                uploadFile(resourceInfo, uploadedResources);
+            } catch (IOException e) {
+                log.warn("Can't upload file: {}\nCause: {}", resourceInfo, e.getMessage());
+            }
         }
         return uploadedResources;
     }
