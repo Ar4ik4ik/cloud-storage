@@ -39,7 +39,8 @@ public class UserPathEnrichAspect {
         Annotation[][] paramAnnotations = signature.getMethod().getParameterAnnotations();
         String userRootDirectory = userDetails.getUserRootDirectory();
         boolean pathWasEnriched = false;
-        log.debug("Annotations {}", Arrays.stream(paramAnnotations).flatMap(annotations -> Arrays.stream(annotations).map(Annotation::toString)).toList());
+        log.debug("Annotations {}", Arrays.stream(paramAnnotations).flatMap(annotations ->
+                Arrays.stream(annotations).map(Annotation::toString)).toList());
         if (args.length == 0) {
             log.debug("No args founded in method {}", signature.getMethod().getName());
             joinPoint.proceed();

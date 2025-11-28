@@ -136,6 +136,7 @@ public class MinioDaoImpl implements S3Dao {
                     .build());
             return true;
         } catch (Exception e) {
+            log.error(e.getMessage());
             return false;
         }
     }

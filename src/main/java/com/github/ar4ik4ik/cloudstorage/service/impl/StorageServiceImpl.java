@@ -41,6 +41,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public List<ResourceInfoResponseDto> getDirectoryInfo(@PathEnrich String directoryPath) {
+        log.info("Getting directory info with path: {}", directoryPath);
         if (!dao.isObjectExists(directoryPath)) {
             throw new ObjectNotFoundException();
         }
@@ -52,6 +53,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public ResourceInfoResponseDto createDirectory(@PathEnrich String directoryPath) {
+        log.info("directory path: {}", directoryPath);
         if (!dao.isObjectExists(getParentPath(directoryPath, false))) {
             throw new ObjectNotFoundException();
         }
@@ -96,6 +98,8 @@ public class StorageServiceImpl implements StorageService {
     public ResourceInfoResponseDto moveResource(@PathEnrich String from, @PathEnrich String to) {
         if (dao.isObjectExists(to)) {
             throw new ObjectAlreadyExistException();
+        } else if (!dao.isObjectExists(from)) {
+            throw new ObjectNotFoundException();
         }
 
         boolean folder = isFolder(from);

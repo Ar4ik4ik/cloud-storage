@@ -11,5 +11,4 @@ class CloudStorageApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }

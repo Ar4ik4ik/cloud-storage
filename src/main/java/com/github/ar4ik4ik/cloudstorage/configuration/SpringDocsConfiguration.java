@@ -34,19 +34,4 @@ import org.springframework.context.annotation.Configuration;
 
 )
 public class SpringDocsConfiguration {
-
-//    @Bean
-//    SpringDocConfiguration springDocConfiguration() {
-//        return new SpringDocConfiguration();
-//    }
-//
-//    @Bean
-//    public SpringDocConfigProperties springDocConfigProperties() {
-//        return new SpringDocConfigProperties();
-//    }
-//
-//    @Bean
-//    public ObjectMapperProvider objectMapperProvider() {
-//        return new ObjectMapperProvider(springDocConfigProperties());
-//    }
 }

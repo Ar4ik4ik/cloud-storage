@@ -13,6 +13,7 @@ import com.github.ar4ik4ik.cloudstorage.service.RegistrationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RegistrationServiceImpl implements RegistrationService {
@@ -43,6 +45,8 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .build());
 
         eventPublisher.publishEvent(new UserRegisteredEvent(this, savedUser.getId()));
+        log.info("Published event");
+
 
         authenticationService.authenticateDirectly(new SignInRequestDto(requestDto.username(), requestDto.password()),
                 request, response);

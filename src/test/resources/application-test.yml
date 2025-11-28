@@ -1,0 +1,16 @@
+spring:
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+logging:
+  level:
+    org.springframework.session: TRACE
+    org.springframework.data.redis: TRACE
+    org.springframework.security: TRACE
+    org.springframework.web: DEBUG
+    com.github.ar4ik4ik.cloudstorage: DEBUG
