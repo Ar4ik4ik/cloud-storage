@@ -33,8 +33,8 @@ public class StorageServiceImpl implements StorageService {
 
     private final String ROOT_DIRECTORY_PATH_PATTERN_FOR_USER = "user-%s-files/";
 
-    private final DirectoryDownloadStrategyImpl directoryDownloadStrategyImpl;
-    private final FileDownloadStrategyImpl fileDownloadStrategyImpl;
+    private final DirectoryDownloadStrategy directoryDownloadStrategy;
+    private final FileDownloadStrategy fileDownloadStrategy;
 
     private final S3Dao dao;
     private final ResourceMapper mapper;

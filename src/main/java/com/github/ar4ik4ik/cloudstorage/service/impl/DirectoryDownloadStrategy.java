@@ -22,7 +22,7 @@ import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.excludeRootPath;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DirectoryDownloadStrategyImpl implements DownloadStrategy {
+public class DirectoryDownloadStrategy implements DownloadStrategy {
 
     private final S3Dao repository;
 

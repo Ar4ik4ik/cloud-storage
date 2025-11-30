@@ -12,7 +12,7 @@ import java.io.BufferedInputStream;
 
 @Service
 @RequiredArgsConstructor
-public class FileDownloadStrategyImpl implements DownloadStrategy {
+public class FileDownloadStrategy implements DownloadStrategy {
 
     private final S3Dao repository;
 
