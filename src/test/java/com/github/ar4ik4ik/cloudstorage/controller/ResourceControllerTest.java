@@ -2,8 +2,8 @@ package com.github.ar4ik4ik.cloudstorage.controller;
 
 import com.github.ar4ik4ik.cloudstorage.TestcontainersConfiguration;
 import com.github.ar4ik4ik.cloudstorage.dao.impl.MinioDaoImpl;
-import com.github.ar4ik4ik.cloudstorage.service.impl.DirectoryDownloadStrategyImpl;
-import com.github.ar4ik4ik.cloudstorage.service.impl.FileDownloadStrategyImpl;
+import com.github.ar4ik4ik.cloudstorage.service.impl.DirectoryDownloadStrategy;
+import com.github.ar4ik4ik.cloudstorage.service.impl.FileDownloadStrategy;
 import com.github.ar4ik4ik.cloudstorage.service.impl.StorageServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,10 +40,10 @@ class ResourceControllerTest {
     private StorageServiceImpl service;
 
     @MockitoBean
-    private DirectoryDownloadStrategyImpl directoryDownloadStrategy;
+    private DirectoryDownloadStrategy directoryDownloadStrategy;
 
     @MockitoBean
-    private FileDownloadStrategyImpl fileDownloadStrategy;
+    private FileDownloadStrategy fileDownloadStrategy;
 
     private static final String TEST_FILE_PATH = "somefile.txt";
     private static final String TEST_DIRECTORY_PATH = "somedirectory/";
