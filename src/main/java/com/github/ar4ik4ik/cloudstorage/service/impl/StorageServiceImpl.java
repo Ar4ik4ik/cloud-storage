@@ -8,21 +8,14 @@ import com.github.ar4ik4ik.cloudstorage.exception.StorageException;
 import com.github.ar4ik4ik.cloudstorage.mapper.ResourceMapper;
 import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
-import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.*;
 
@@ -38,6 +31,7 @@ public class StorageServiceImpl implements StorageService {
 
     private final S3Dao dao;
     private final ResourceMapper mapper;
+    private final ResourceUploader uploader;
 
     @Override
     public List<ResourceInfoResponseDto> getDirectoryInfo(@PathEnrich String directoryPath) {
@@ -144,60 +138,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public List<ResourceInfoResponseDto> uploadResource(MultipartFile[] files, @PathEnrich String uploadingPath) {
-        List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
-        Set<String> collectedDirectoriesFromInputFiles = collectDirectoriesFromInputFiles(files, uploadingPath);
-        uploadDirectories(collectedDirectoriesFromInputFiles, uploadedResources, getRootPath(uploadingPath));
-
-        for (MultipartFile file : files) {
-            ResourceInfo resourceInfo = ResourceInfo.create(uploadingPath, file);
-            try {
-                uploadFile(resourceInfo, uploadedResources);
-            } catch (IOException e) {
-                log.warn("Can't upload file: {}\nCause: {}", resourceInfo, e.getMessage());
-            }
-        }
-        return uploadedResources;
-    }
-
-    private void uploadDirectories(Set<String> collectedDirectoriesFromInputFiles,
-                                   List<ResourceInfoResponseDto> resourcesToUpload, String rootPath) {
-        collectedDirectoriesFromInputFiles.forEach(directory -> {
-                    dao.createEmptyDirectory(rootPath.concat(directory));
-                    resourcesToUpload.add(mapper.toUploadDirectoryDto(directory));
-                }
-        );
-    }
-
-    private Set<String> collectDirectoriesFromInputFiles(MultipartFile[] files, String uploadingPath) {
-        Set<String> collectedDirectoriesFromInputFiles = new HashSet<>();
-
-        for (MultipartFile file : files) {
-            var resourceInfo = ResourceInfo.create(uploadingPath, file);
-            String parentDirectoryPathForFile = resourceInfo.getRelativePath();
-
-            Path filePath = Path.of(parentDirectoryPathForFile);
-            Path parentPath = filePath.getParent();
-
-            while (parentPath != null) {
-                collectedDirectoriesFromInputFiles.add(parentPath.toString()
-                        .replace(File.separator, "/")
-                        .concat("/"));
-                parentPath = parentPath.getParent();
-            }
-        }
-        log.info("Collected directories: {}", collectedDirectoriesFromInputFiles);
-        return collectedDirectoriesFromInputFiles;
-    }
-
-    private void uploadFile(ResourceInfo resourceInfo, List<ResourceInfoResponseDto> resourcesToUpload) throws IOException {
-        try (var inputStream = new BufferedInputStream(resourceInfo.getMultipartFile().getInputStream())) {
-            dao.uploadObject(resourceInfo.getFullMinioPath(),
-                    resourceInfo.getMultipartFile().getContentType(),
-                    inputStream,
-                    resourceInfo.getMultipartFile().getSize());
-
-            resourcesToUpload.add(mapper.toUploadFileDto(resourceInfo));
-        }
+        return uploader.upload(files, uploadingPath);
     }
 
     private long getBytesCount(String filePath) {
