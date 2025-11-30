@@ -86,45 +86,22 @@ public class MinioDaoImpl implements S3Dao {
     }
 
     @Override
-    public List<Item> getListObjectsByPath(String path, boolean recursive, boolean includeSource) throws StorageException {
+    public List<Item> getListObjectsByPath(String path, boolean recursive) throws StorageException {
         var storageObjectsIterator = minioClient.listObjects(ListObjectsArgs.builder()
                 .bucket(bucket)
                 .prefix(path)
                 .recursive(recursive)
                 .delimiter("/")
                 .build()).iterator();
-        var itemStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(storageObjectsIterator,
-                        Spliterator.ORDERED), false)
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(storageObjectsIterator, Spliterator.ORDERED), false)
                 .map(item -> {
                     try {
                         return item.get();
                     } catch (Exception e) {
                         throw mapExceptionToDomain("getListObjectsByPath", path, e);
                     }
-                });
-        if (includeSource) {
-            return itemStream.toList();
-        } else {
-            return itemStream.filter(item -> !item.objectName().equals(path)).toList();
-        }
-    }
-
-    @Override
-    public void copyObject(String from, String to, boolean isFolder) throws StorageException {
-        if (isFolder) {
-            copyFolder(from, to);
-        } else {
-            copyFile(from, to);
-        }
-    }
-
-    @Override
-    public void removeObject(String path, boolean isFolder) throws StorageException {
-        if (isFolder) {
-            removeFolder(path);
-        } else {
-            removeFile(path);
-        }
+                })
+                .toList();
     }
 
     @Override
@@ -141,7 +118,8 @@ public class MinioDaoImpl implements S3Dao {
         }
     }
 
-    private void removeFile(String path) throws StorageException {
+    @Override
+    public void removeFile(String path) throws StorageException {
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()
                     .bucket(bucket)
@@ -153,8 +131,9 @@ public class MinioDaoImpl implements S3Dao {
 
     }
 
-    private void removeFolder(String path) throws StorageException {
-        List<DeleteObject> storageObjectsToRemove = getListObjectsByPath(path, true, true).stream()
+    @Override
+    public void removeFolder(String path) throws StorageException {
+        List<DeleteObject> storageObjectsToRemove = getListObjectsByPath(path, true).stream()
                 .map(object -> new DeleteObject(object.objectName()))
                 .toList();
         if (storageObjectsToRemove.isEmpty()) {
@@ -177,7 +156,8 @@ public class MinioDaoImpl implements S3Dao {
         }
     }
 
-    private void copyFile(String from, String to) throws StorageException {
+    @Override
+    public void copyFile(String from, String to) throws StorageException {
         try {
             minioClient.copyObject(CopyObjectArgs.builder()
                     .bucket(bucket)
@@ -193,8 +173,9 @@ public class MinioDaoImpl implements S3Dao {
         }
     }
 
-    private void copyFolder(String from, String to) throws StorageException {
-        List<Item> storageObjects = getListObjectsByPath(from, true, true);
+    @Override
+    public void copyFolder(String from, String to) throws StorageException {
+        List<Item> storageObjects = getListObjectsByPath(from, true);
         storageObjects.forEach(object -> {
             try {
                 minioClient.copyObject(CopyObjectArgs.builder()

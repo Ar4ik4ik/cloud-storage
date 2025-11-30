@@ -45,8 +45,9 @@ public class StorageServiceImpl implements StorageService {
         if (!dao.isObjectExists(directoryPath)) {
             throw new ObjectNotFoundException();
         }
-        return dao.getListObjectsByPath(directoryPath, false, false)
+        return dao.getListObjectsByPath(directoryPath, false)
                 .stream()
+                .filter(item -> !item.objectName().equals(directoryPath))
                 .map(mapper::toDirectoryInfoDto)
                 .toList();
     }
@@ -81,7 +82,11 @@ public class StorageServiceImpl implements StorageService {
             throw new ObjectNotFoundException();
         }
 
-        dao.removeObject(path, isFolder(path));
+        if (isFolder(path)) {
+            dao.removeFolder(path);
+        } else {
+            dao.removeFile(path);
+        }
     }
 
     @Override
@@ -90,8 +95,8 @@ public class StorageServiceImpl implements StorageService {
             throw new ObjectNotFoundException();
         }
 
-        return isFolder(path) ? directoryDownloadStrategyImpl.download(path)
-                : fileDownloadStrategyImpl.download(path);
+        return isFolder(path) ? directoryDownloadStrategy.download(path)
+                : fileDownloadStrategy.download(path);
     }
 
     @Override
@@ -103,20 +108,32 @@ public class StorageServiceImpl implements StorageService {
         }
 
         boolean folder = isFolder(from);
-
-        dao.copyObject(from, to, folder);
-        try {
-            dao.removeObject(from, folder);
-        } catch (StorageException e) {
-            dao.removeObject(to, folder);
+        if (folder) {
+            dao.copyFolder(from, to);
+        } else {
+            dao.copyFile(from, to);
         }
+        try {
+            if (folder) {
+                dao.removeFolder(from);
+            } else {
+                dao.removeFile(from);
+            }
+        } catch (StorageException e) {
+            if (folder) {
+                dao.removeFolder(to);
+            } else {
+                dao.removeFile(to);
+            }
+        }
+
         long bytesCount = getBytesCount(to);
         return mapper.toMoveResourceDto(from, to, bytesCount);
     }
 
     @Override
     public List<ResourceInfoResponseDto> searchResourcesByQuery(String query, String rootPath) {
-        var allObjects = dao.getListObjectsByPath(rootPath, true, true);
+        var allObjects = dao.getListObjectsByPath(rootPath, true);
         var filteredObjects = allObjects.stream()
                 .filter(obj -> extractNameFromPath(obj.objectName())
                         .toLowerCase().contains(query.toLowerCase())).toList();

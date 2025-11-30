@@ -15,11 +15,15 @@ public interface S3Dao {
 
     void createEmptyDirectory(String path) throws StorageException;
 
-    List<Item> getListObjectsByPath(String path, boolean recursive, boolean includeSource) throws StorageException;
-
-    void copyObject(String from, String to, boolean isFolder) throws StorageException;
-
-    void removeObject(String path, boolean isFolder) throws StorageException;
+    List<Item> getListObjectsByPath(String path, boolean recursive) throws StorageException;
 
     boolean isObjectExists(String path);
+
+    void removeFile(String path) throws StorageException;
+
+    void removeFolder(String path) throws StorageException;
+
+    void copyFile(String from, String to) throws StorageException;
+
+    void copyFolder(String from, String to) throws StorageException;
 }
