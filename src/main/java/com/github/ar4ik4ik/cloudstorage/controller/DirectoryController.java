@@ -1,6 +1,7 @@
 package com.github.ar4ik4ik.cloudstorage.controller;
 
-import com.github.ar4ik4ik.cloudstorage.model.ResourcePath;
+import com.github.ar4ik4ik.cloudstorage.model.dto.DirectoryCreateRequestDto;
+import com.github.ar4ik4ik.cloudstorage.model.dto.DirectoryInfoRequestDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.MessageDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
@@ -61,7 +62,7 @@ public class DirectoryController {
     )
     @GetMapping
     public ResponseEntity<List<ResourceInfoResponseDto>> getDirectoryInfo(
-            @RequestParam(name = "path") ResourcePath path) {
+            @RequestParam(name = "path") @Valid DirectoryInfoRequestDto path) {
         log.info("DirectoryController.getDirectoryInfo called. Resolved path: '{}'", path.path());
         return ResponseEntity.ok(service.getDirectoryInfo(path.path()));
     }
@@ -96,7 +97,7 @@ public class DirectoryController {
     )
     @PostMapping
     public ResponseEntity<ResourceInfoResponseDto> createDirectory(
-            @RequestParam(name = "path") @Valid ResourcePath path) {
+            @RequestParam(name = "path") @Valid DirectoryCreateRequestDto path) {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequestUri()
                 .path("/api/directory")

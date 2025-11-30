@@ -1,6 +1,6 @@
 package com.github.ar4ik4ik.cloudstorage.controller;
 
-import com.github.ar4ik4ik.cloudstorage.model.ResourcePath;
+import com.github.ar4ik4ik.cloudstorage.model.dto.ResourcePathRequestDto;
 import com.github.ar4ik4ik.cloudstorage.model.StorageUserDetails;
 import com.github.ar4ik4ik.cloudstorage.model.dto.MessageDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
@@ -69,7 +69,7 @@ public class ResourceController {
     )
     @GetMapping
     public ResponseEntity<ResourceInfoResponseDto> getResourceInfo(
-            @RequestParam(name = "path") @Valid ResourcePath path) {
+            @RequestParam(name = "path") @Valid ResourcePathRequestDto path) {
         return ResponseEntity.ok(service.getResourceInfo(path.path()));
     }
 
@@ -97,7 +97,7 @@ public class ResourceController {
             }
     )
     @DeleteMapping
-    public ResponseEntity<?> deleteResource(@RequestParam(name = "path") @Valid ResourcePath path) {
+    public ResponseEntity<?> deleteResource(@RequestParam(name = "path") @Valid ResourcePathRequestDto path) {
         service.deleteResource(path.path());
         return ResponseEntity.noContent().build();
     }
@@ -128,7 +128,7 @@ public class ResourceController {
     )
     @GetMapping(path = "download")
     public ResponseEntity<StreamingResponseBody> downloadResource(
-            @RequestParam(name = "path") @Valid ResourcePath path) {
+            @RequestParam(name = "path") @Valid ResourcePathRequestDto path) {
         String filename = PathUtils.getFilenameForDownload(path.path());
         return ResponseEntity
                 .ok()
@@ -170,8 +170,8 @@ public class ResourceController {
     )
     @GetMapping(path = "move")
     public ResponseEntity<ResourceInfoResponseDto> moveResource(
-            @RequestParam(name = "from") @Valid ResourcePath sourcePath,
-            @RequestParam(name = "to") @Valid ResourcePath targetPath) {
+            @RequestParam(name = "from") @Valid ResourcePathRequestDto sourcePath,
+            @RequestParam(name = "to") @Valid ResourcePathRequestDto targetPath) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(service.moveResource(sourcePath.path(), targetPath.path()));
@@ -201,7 +201,7 @@ public class ResourceController {
     )
     @GetMapping(path = "search")
     public ResponseEntity<?> searchResource(
-            @RequestParam(name = "query") @Valid ResourcePath searchQuery,
+            @RequestParam(name = "query") @Valid ResourcePathRequestDto searchQuery,
             @AuthenticationPrincipal StorageUserDetails userDetails) {
         return ResponseEntity.ok(service.searchResourcesByQuery(
                 searchQuery.path(), userDetails.getUserRootDirectory()));
@@ -242,7 +242,7 @@ public class ResourceController {
     )
     @PostMapping
     public ResponseEntity<List<ResourceInfoResponseDto>> uploadResource(
-            @RequestParam(name = "path") @Valid ResourcePath path,
+            @RequestParam(name = "path") @Valid ResourcePathRequestDto path,
             @RequestParam(name = "object") @ValidFiles MultipartFile[] files) {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequestUri()
