@@ -38,7 +38,8 @@ public class DirectoryController {
             description = "Возвращает список ресурсов (файлов и папок), находящихся непосредственно в указанной папке (без рекурсии).",
             parameters = {
                     @Parameter(name = "path", description = "Полный путь к папке, URL-encoded. Обязательно должен заканчиваться на '/'.",
-                            required = true, example = "my_folder/", schema = @Schema(implementation = String.class))
+                            required = true, example = "my_folder/", schema = @Schema(implementation = String.class),
+                            allowEmptyValue = true)
             },
             responses = {
                     @ApiResponse(responseCode = "200", description = "Успешное получение содержимого папки",

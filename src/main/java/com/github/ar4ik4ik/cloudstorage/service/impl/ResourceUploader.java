@@ -1,6 +1,7 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
 import com.github.ar4ik4ik.cloudstorage.dao.S3Dao;
+import com.github.ar4ik4ik.cloudstorage.exception.ObjectAlreadyExistException;
 import com.github.ar4ik4ik.cloudstorage.mapper.ResourceMapper;
 import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.utils.ResourceInfo;
@@ -13,10 +14,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getRootPath;
 
@@ -32,6 +30,7 @@ class ResourceUploader {
     public List<ResourceInfoResponseDto> upload(MultipartFile[] files, String uploadingPath) {
         List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
         Set<String> collectedDirectoriesFromInputFiles = collectDirectoriesFromInputFiles(files, uploadingPath);
+        checkIsFilesAlreadyExists(files, uploadingPath);
         uploadDirectories(collectedDirectoriesFromInputFiles, uploadedResources, getRootPath(uploadingPath));
 
         for (MultipartFile file : files) {
@@ -83,6 +82,15 @@ class ResourceUploader {
                     resourceInfo.getMultipartFile().getSize());
 
             resourcesToUpload.add(mapper.toUploadFileDto(resourceInfo));
+        }
+    }
+
+    private void checkIsFilesAlreadyExists(MultipartFile[] files, String uploadingPath) {
+        for (MultipartFile file : files) {
+            ResourceInfo resourceInfo = ResourceInfo.create(uploadingPath, file);
+            if (dao.isObjectExists(resourceInfo.getFullMinioPath())) {
+                throw new ObjectAlreadyExistException();
+            }
         }
     }
 }
