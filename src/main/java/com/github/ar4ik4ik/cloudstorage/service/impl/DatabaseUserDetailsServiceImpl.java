@@ -2,8 +2,8 @@ package com.github.ar4ik4ik.cloudstorage.service.impl;
 
 
 import com.github.ar4ik4ik.cloudstorage.model.AuthorityType;
-import com.github.ar4ik4ik.cloudstorage.model.entity.Authority;
 import com.github.ar4ik4ik.cloudstorage.model.StorageUserDetails;
+import com.github.ar4ik4ik.cloudstorage.model.entity.Authority;
 import com.github.ar4ik4ik.cloudstorage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
