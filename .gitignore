@@ -48,3 +48,5 @@ build/
 /config/
 /.mvn/
 /src/test/resources/test_upload_folder/
+/htmlReport/
+/src/test/resources/test_upload_folder/.obsidian/plugins/dataview/

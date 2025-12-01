@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -74,6 +76,7 @@ class AuthenticationServiceTest {
     }
 
     @Test
+    @DisplayName("Успешная аутентификация с корректным логпасом приводит к установке контекста в Spring Security")
     void authenticate_ShouldSetSecurityContextForValidCredentials() {
         // when
         authenticationService.authenticate(validRequestDto);
@@ -90,6 +93,7 @@ class AuthenticationServiceTest {
     }
 
     @Test
+    @DisplayName("Ошибка при аутентификации с неверными учетными данными")
     void authenticate_ShouldThrowsExceptionForInvalidCredentials() {
         // when
         assertThatThrownBy(() -> authenticationService.authenticate(invalidRequestDto))
@@ -104,6 +108,7 @@ class AuthenticationServiceTest {
     }
 
     @Test
+    @DisplayName("Успешная аутентификация с корректными учетными данными напрямую устанавливает и сохраняет контекст в Spring Security")
     void authenticateDirectly_ShouldSetSecurityContextForValidCredentialsAndSaveIt() {
         // when
         authenticationService.authenticateDirectly(validRequestDto, mockRequest, mockResponse);

@@ -1,6 +1,7 @@
 package com.github.ar4ik4ik.cloudstorage.service.impl;
 
 import com.github.ar4ik4ik.cloudstorage.model.dto.SignInRequestDto;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +21,7 @@ class LoginServiceTest {
     private LoginServiceImpl loginService;
 
     @Test
+    @DisplayName("Логин приводит к вызову метода аутентификации")
     void processLogin_ShouldCallAuthenticateOnAuthenticationService() {
         // given
         var signInRequestDto = new SignInRequestDto("testuser", "testpassword");

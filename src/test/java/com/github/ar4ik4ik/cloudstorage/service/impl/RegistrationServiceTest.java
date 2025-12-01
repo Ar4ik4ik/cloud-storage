@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -68,6 +69,7 @@ class RegistrationServiceTest {
     }
 
     @Test
+    @DisplayName("Успешная регистрация с корректными данными сохраняет нового пользователя в БД")
     void registerUser_ShouldPersistUser() {
         // when
         registrationService.registerUser(signUpRequestDto);
@@ -80,6 +82,7 @@ class RegistrationServiceTest {
     }
 
     @Test
+    @DisplayName("Ошибка при регистрации пользователя с неуникальным логином")
     void registerUser_ShouldThrowUserAlreadyExistsException() {
         // when
         registrationService.registerUser(signUpRequestDto);
