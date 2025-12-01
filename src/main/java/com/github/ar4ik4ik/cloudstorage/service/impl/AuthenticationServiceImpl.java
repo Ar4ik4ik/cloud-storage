@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
@@ -24,20 +25,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public void authenticate(SignInRequestDto requestDto) {
-        var authToken = new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password());
-        var authRequest = authenticationManager.authenticate(authToken);
+        var authRequest = doAuthenticate(requestDto);
 
         SecurityContextHolder.getContext().setAuthentication(authRequest);
     }
 
     @Override
     public void authenticateDirectly(SignInRequestDto requestDto, HttpServletRequest request, HttpServletResponse response) {
-        var authToken = new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password());
-        var authRequest = authenticationManager.authenticate(authToken);
+        var authRequest = doAuthenticate(requestDto);
 
         SecurityContext context = securityContextHolderStrategy.createEmptyContext();
         context.setAuthentication(authRequest);
         securityContextHolderStrategy.setContext(context);
         this.securityContextRepository.saveContext(context, request, response);
+    }
+
+    private Authentication doAuthenticate(SignInRequestDto requestDto) {
+        var authToken = new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password());
+        return authenticationManager.authenticate(authToken);
     }
 }

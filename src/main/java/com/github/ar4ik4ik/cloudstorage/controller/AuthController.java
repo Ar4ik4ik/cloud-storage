@@ -4,8 +4,9 @@ import com.github.ar4ik4ik.cloudstorage.model.dto.AuthResponseDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.MessageDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.SignInRequestDto;
 import com.github.ar4ik4ik.cloudstorage.model.dto.SignUpRequestDto;
-import com.github.ar4ik4ik.cloudstorage.service.impl.LoginServiceImpl;
-import com.github.ar4ik4ik.cloudstorage.service.impl.RegistrationServiceImpl;
+import com.github.ar4ik4ik.cloudstorage.service.AuthenticationService;
+import com.github.ar4ik4ik.cloudstorage.service.LoginService;
+import com.github.ar4ik4ik.cloudstorage.service.RegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,8 +33,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Аутентификация", description = "API для регистрации, входа и выхода пользователей из системы")
 public class AuthController {
 
-    private final RegistrationServiceImpl registrationService;
-    private final LoginServiceImpl loginService;
+    private final RegistrationService registrationService;
+    private final LoginService loginService;
+    private final AuthenticationService authenticationService;
 
     @Operation(
             summary = "Вход пользователя",
@@ -88,7 +90,10 @@ public class AuthController {
     )
     @PostMapping(path = "/sign-up")
     public ResponseEntity<AuthResponseDto> signUp(@Valid @org.springframework.web.bind.annotation.RequestBody SignUpRequestDto requestDto, HttpServletRequest request, HttpServletResponse response) {
-        registrationService.registerUser(requestDto, request, response);
+        registrationService.registerUser(requestDto);
+        authenticationService.authenticateDirectly(
+                new SignInRequestDto(requestDto.username(), requestDto.password()), request, response
+        );
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new AuthResponseDto(requestDto.username()));

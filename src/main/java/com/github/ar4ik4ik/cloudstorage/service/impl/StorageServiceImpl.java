@@ -24,7 +24,10 @@ import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.*;
 @RequiredArgsConstructor
 public class StorageServiceImpl implements StorageService {
 
-    private final String ROOT_DIRECTORY_PATH_PATTERN_FOR_USER = "user-%s-files/";
+    private static final String ROOT_DIRECTORY_PATH_PATTERN_FOR_USER = "user-%s-files/";
+    private static final boolean RECURSIVE_SEARCH = true;
+    private static final boolean FLAT_SEARCH = false;
+    public static final boolean WITH_ROOT_PATH = false;
 
     private final DirectoryDownloadStrategy directoryDownloadStrategy;
     private final FileDownloadStrategy fileDownloadStrategy;
@@ -39,7 +42,7 @@ public class StorageServiceImpl implements StorageService {
         if (!dao.isObjectExists(directoryPath)) {
             throw new ObjectNotFoundException();
         }
-        return dao.getListObjectsByPath(directoryPath, false)
+        return dao.getListObjectsByPath(directoryPath, FLAT_SEARCH)
                 .stream()
                 .filter(item -> !item.objectName().equals(directoryPath))
                 .map(mapper::toDirectoryInfoDto)
@@ -49,7 +52,7 @@ public class StorageServiceImpl implements StorageService {
     @Override
     public ResourceInfoResponseDto createDirectory(@PathEnrich String directoryPath) {
         log.info("directory path: {}", directoryPath);
-        if (!dao.isObjectExists(getParentPath(directoryPath, false))) {
+        if (!dao.isObjectExists(getParentPath(directoryPath, WITH_ROOT_PATH))) {
             throw new ObjectNotFoundException();
         }
         dao.createEmptyDirectory(directoryPath);
@@ -57,8 +60,8 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public void createRootDirectoryForUser(Integer userId) {
-        dao.createEmptyDirectory(String.format(ROOT_DIRECTORY_PATH_PATTERN_FOR_USER, userId));
+    public void createRootDirectoryForUser(Integer id) {
+        dao.createEmptyDirectory(String.format(ROOT_DIRECTORY_PATH_PATTERN_FOR_USER, id));
     }
 
     @Override
@@ -76,11 +79,7 @@ public class StorageServiceImpl implements StorageService {
             throw new ObjectNotFoundException();
         }
 
-        if (isFolder(path)) {
-            dao.removeFolder(path);
-        } else {
-            dao.removeFile(path);
-        }
+        performRemove(path, isFolder(path));
     }
 
     @Override
@@ -101,24 +100,14 @@ public class StorageServiceImpl implements StorageService {
             throw new ObjectNotFoundException();
         }
 
-        boolean folder = isFolder(from);
-        if (folder) {
-            dao.copyFolder(from, to);
-        } else {
-            dao.copyFile(from, to);
-        }
+        boolean isDirectory = isFolder(from);
+        performCopy(from, to, isDirectory);
         try {
-            if (folder) {
-                dao.removeFolder(from);
-            } else {
-                dao.removeFile(from);
-            }
+            performRemove(from, isDirectory);
         } catch (StorageException e) {
-            if (folder) {
-                dao.removeFolder(to);
-            } else {
-                dao.removeFile(to);
-            }
+            // Попытка ручного отката, если не удалось удалить источник
+            performRemove(to, isDirectory);
+            log.error("Error moving resource, rolling back", e);
         }
 
         long bytesCount = getBytesCount(to);
@@ -127,11 +116,11 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public List<ResourceInfoResponseDto> searchResourcesByQuery(String query, String rootPath) {
-        var allObjects = dao.getListObjectsByPath(rootPath, true);
-        var filteredObjects = allObjects.stream()
+        var searchQueryNormalized = query.toLowerCase();
+        var allObjects = dao.getListObjectsByPath(rootPath, RECURSIVE_SEARCH);
+        return allObjects.stream()
                 .filter(obj -> extractNameFromPath(obj.objectName())
-                        .toLowerCase().contains(query.toLowerCase())).toList();
-        return filteredObjects.stream()
+                        .toLowerCase().contains(searchQueryNormalized))
                 .map(mapper::toDirectoryInfoDto)
                 .toList();
     }
@@ -141,7 +130,27 @@ public class StorageServiceImpl implements StorageService {
         return uploader.upload(files, uploadingPath);
     }
 
+    private void performRemove(String from, boolean isDirectory) {
+        if (isDirectory) {
+            dao.removeFolder(from);
+        } else {
+            dao.removeFile(from);
+        }
+    }
+
+    private void performCopy(String from, String to, boolean isDirectory) {
+        if (isDirectory) {
+            dao.copyFolder(from, to);
+        } else {
+            dao.copyFile(from, to);
+        }
+    }
+
     private long getBytesCount(String filePath) {
-        return dao.getObject(filePath).headers().byteCount();
+        try (var obj = dao.getObject(filePath)) {
+            return obj.headers().byteCount();
+        } catch (IOException e) {
+            throw new StorageException(e);
+        }
     }
 }

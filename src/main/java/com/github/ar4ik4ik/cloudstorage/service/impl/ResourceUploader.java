@@ -28,22 +28,33 @@ class ResourceUploader {
 
 
     public List<ResourceInfoResponseDto> upload(MultipartFile[] files, String uploadingPath) {
-        List<ResourceInfoResponseDto> uploadedResources = new LinkedList<>();
-        Set<String> collectedDirectoriesFromInputFiles = collectDirectoriesFromInputFiles(files, uploadingPath);
-        checkIsFilesAlreadyExists(files, uploadingPath);
-        uploadDirectories(collectedDirectoriesFromInputFiles, uploadedResources, getRootPath(uploadingPath));
-
+        List<ResourceInfo> resourceInfoList = new ArrayList<>(files.length);
         for (MultipartFile file : files) {
             ResourceInfo resourceInfo = ResourceInfo.create(uploadingPath, file);
+            if (dao.isObjectExists(resourceInfo.getFullMinioPath())) {
+                throw new ObjectAlreadyExistException();
+            }
+            resourceInfoList.add(resourceInfo);
+        }
+
+        List<ResourceInfoResponseDto> uploadedResources = new ArrayList<>(resourceInfoList.size());
+
+        Set<String> collectedDirectoriesFromInputFiles = collectDirectoriesFromInputFiles(resourceInfoList);
+        uploadDirectories(collectedDirectoriesFromInputFiles, uploadedResources, getRootPath(uploadingPath));
+
+        for (ResourceInfo resourceInfo : resourceInfoList) {
             try {
                 uploadFile(resourceInfo, uploadedResources);
             } catch (IOException e) {
-                log.warn("Can't upload file: {}\nCause: {}", resourceInfo, e.getMessage());
+                // При ошибке загрузки одного файла процесс не прерывается,
+                // но при наличии дубликатов операция отменяется полностью до начала загрузки
+                log.warn("Can't upload file: {}\nCause: {}", resourceInfo, e.toString());
             }
         }
         return uploadedResources;
     }
 
+    // Создаем структуру каталогов перед загрузкой файлов, чтобы гарантировать наличие родительских путей (необходимо при поиске)
     private void uploadDirectories(Set<String> collectedDirectoriesFromInputFiles,
                                    List<ResourceInfoResponseDto> resourcesToUpload, String rootPath) {
         collectedDirectoriesFromInputFiles.forEach(directory -> {
@@ -53,14 +64,12 @@ class ResourceUploader {
         );
     }
 
-    private Set<String> collectDirectoriesFromInputFiles(MultipartFile[] files, String uploadingPath) {
+    private Set<String> collectDirectoriesFromInputFiles(List<ResourceInfo> resourceInfoList) {
         Set<String> collectedDirectoriesFromInputFiles = new HashSet<>();
 
-        for (MultipartFile file : files) {
-            var resourceInfo = ResourceInfo.create(uploadingPath, file);
-            String parentDirectoryPathForFile = resourceInfo.getRelativePath();
+        for (ResourceInfo resourceInfo : resourceInfoList) {
 
-            Path filePath = Path.of(parentDirectoryPathForFile);
+            Path filePath = Path.of(resourceInfo.getRelativePath());
             Path parentPath = filePath.getParent();
 
             while (parentPath != null) {
@@ -82,15 +91,6 @@ class ResourceUploader {
                     resourceInfo.getMultipartFile().getSize());
 
             resourcesToUpload.add(mapper.toUploadFileDto(resourceInfo));
-        }
-    }
-
-    private void checkIsFilesAlreadyExists(MultipartFile[] files, String uploadingPath) {
-        for (MultipartFile file : files) {
-            ResourceInfo resourceInfo = ResourceInfo.create(uploadingPath, file);
-            if (dao.isObjectExists(resourceInfo.getFullMinioPath())) {
-                throw new ObjectAlreadyExistException();
-            }
         }
     }
 }
