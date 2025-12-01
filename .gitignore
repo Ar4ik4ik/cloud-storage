@@ -47,3 +47,4 @@ build/
 /data/
 /config/
 /.mvn/
+/src/test/resources/test_upload_folder/

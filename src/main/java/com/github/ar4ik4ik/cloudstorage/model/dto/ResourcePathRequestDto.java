@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 public record ResourcePathRequestDto(
         @NotNull
         @Pattern(
-                regexp = "^[a-zA-Z0-9!\\-_.*'()/]*$",
+                regexp = "^[a-zA-Z0-9а-яА-ЯёЁ!\\-_.*'()/ ]*$",
                 message = "Path contains invalid characters. Only alphanumeric, !, -, _, ., *, ', (, ), and / are allowed."
         )
         String path) {
