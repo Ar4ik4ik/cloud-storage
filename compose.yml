@@ -1,8 +1,9 @@
 services:
 #  app:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
+#    image: serarturo/cloud-storage-app:latest
+##    build:
+##      context: .
+##      dockerfile: Dockerfile
 #    container_name: app
 #    depends_on:
 #      - db
@@ -16,6 +17,7 @@ services:
 #      - MINIO_URL=http://minio:9000
 #    ports:
 #      - '8080:8080'
+#    restart: always
   frontend:
     build:
       context: ../cloud-storage-frontend
@@ -26,7 +28,7 @@ services:
     ports:
       - '8090:80'
   db:
-    image: 'postgres:18'
+    image: 'postgres:15'
     ports:
       - '5432:5432'
     environment:
