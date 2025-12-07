@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getRootPath;
 
 @Slf4j
 @Component
@@ -43,7 +42,8 @@ class ResourceUploader {
         List<ResourceInfoResponseDto> uploadedResources = new ArrayList<>(resourceInfoList.size());
 
         Set<String> collectedDirectoriesFromInputFiles = collectDirectoriesFromInputFiles(resourceInfoList);
-        uploadDirectories(collectedDirectoriesFromInputFiles, uploadedResources, getRootPath(uploadingPath));
+        log.debug("Root path to upload: {}", uploadingPath);
+        uploadDirectories(collectedDirectoriesFromInputFiles, uploadedResources, uploadingPath);
 
         for (ResourceInfo resourceInfo : resourceInfoList) {
             try {
