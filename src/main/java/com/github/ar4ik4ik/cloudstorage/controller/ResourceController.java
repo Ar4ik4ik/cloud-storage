@@ -31,7 +31,7 @@ import java.util.List;
 
 import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getParentPath;
 
-@RequestMapping("/api/resource")
+@RequestMapping("/resource")
 @RestController
 @RequiredArgsConstructor
 @Validated

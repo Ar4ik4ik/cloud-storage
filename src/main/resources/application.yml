@@ -46,6 +46,7 @@ server:
   servlet:
     session:
       timeout: 30m
+    context-path: /api
   tomcat:
     max-part-count: 500
 logging:
@@ -62,4 +63,18 @@ minio:
   bucket: user-files
 springdoc:
   paths-to-match:
-    - /api/**
+    - /user/**
+    - /resource/**
+    - /directory/**
+    - /auth/**
+  swagger-ui:
+    path: /swagger-ui.html
+    disable-swagger-default-url: true
+    url: "/v3/api-docs"
+  api-docs:
+    path: /v3/api-docs
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info

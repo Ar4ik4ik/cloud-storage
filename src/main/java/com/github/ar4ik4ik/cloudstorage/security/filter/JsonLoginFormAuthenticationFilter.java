@@ -26,7 +26,7 @@ public class JsonLoginFormAuthenticationFilter extends AbstractAuthenticationPro
 
 
     public JsonLoginFormAuthenticationFilter(AuthenticationManager authenticationManager, ObjectMapper objectMapper, SecurityContextRepository securityContextRepository) {
-        super("/api/auth/sign-in", authenticationManager);
+        super("/auth/sign-in", authenticationManager);
         this.objectMapper = objectMapper;
         this.securityContextRepository = securityContextRepository;
         setSessionAuthenticationStrategy(new SessionFixationProtectionStrategy());

@@ -25,7 +25,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/directory")
+@RequestMapping("/directory")
 @Validated
 @Slf4j
 @Tag(name = "Управление директориями", description = "API для просмотра и создания папок в облачном хранилище")

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/user")
+@RequestMapping("/user")
 @Tag(name = "Информация о пользователе", description = "API для получения информации о текущем аутентифицированном пользователе")
 @SecurityRequirement(name = "cookieAuth")
 public class UserController {
