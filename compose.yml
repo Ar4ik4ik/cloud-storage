@@ -26,9 +26,10 @@ services:
     env_file:
       - ../cloud-storage-frontend/.env
     ports:
-      - '8090:80'
+      - '80:80'
   db:
     image: 'postgres:15'
+    container_name: db
     ports:
       - '5432:5432'
     environment:
@@ -44,6 +45,7 @@ services:
       retries: 10
   redis:
     image: redis:8.2.1
+    container_name: redis
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_USER: ${REDIS_USER}
@@ -72,8 +74,10 @@ services:
     restart: unless-stopped
     tty: true
     stdin_open: true
+
   minio:
     image: minio/minio:latest
+    container_name: minio
     environment:
       MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
       MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
