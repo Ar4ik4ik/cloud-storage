@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.excludeRootPath;
+import static com.github.ar4ik4ik.cloudstorage.utils.PathUtils.getRelativePath;
 
 
 @Slf4j
