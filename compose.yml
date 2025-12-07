@@ -1,23 +1,23 @@
 services:
-#  app:
+  app:
 #    image: serarturo/cloud-storage-app:latest
-##    build:
-##      context: .
-##      dockerfile: Dockerfile
-#    container_name: app
-#    depends_on:
-#      - db
-#      - redis
-#      - minio
-#    env_file:
-#      - .env
-#    environment:
-#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
-#      - SPRING_DATA_REDIS_HOST=redis
-#      - MINIO_URL=http://minio:9000
-#    ports:
-#      - '8080:8080'
-#    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    depends_on:
+      - db
+      - redis
+      - minio
+    env_file:
+      - .env
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - SPRING_DATA_REDIS_HOST=redis
+      - MINIO_URL=http://minio:9000
+    ports:
+      - '8080:8080'
+    restart: always
   frontend:
     build:
       context: ../cloud-storage-frontend
