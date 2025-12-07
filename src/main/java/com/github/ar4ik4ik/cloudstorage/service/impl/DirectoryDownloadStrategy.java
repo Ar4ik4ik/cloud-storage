@@ -35,7 +35,7 @@ public class DirectoryDownloadStrategy implements DownloadStrategy {
                 for (Item item: storageItems) {
                     var storageObject = repository.getObject(item.objectName());
                     try (BufferedInputStream inputStream = new BufferedInputStream(storageObject)) {
-                        var zipEntry = new ZipEntry(excludeRootPath(item.objectName()));
+                        var zipEntry = new ZipEntry(getRelativePath(item.objectName(), resourcePath));
 
                         zipOutputStream.putNextEntry(zipEntry);
                         IOUtils.copy(inputStream, zipOutputStream, 8192);
