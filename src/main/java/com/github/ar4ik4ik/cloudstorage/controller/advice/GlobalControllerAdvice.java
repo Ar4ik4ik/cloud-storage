@@ -75,4 +75,10 @@ public class GlobalControllerAdvice {
     public MessageDto handleUsernameAlreadyExist() {
         return new MessageDto("Username already exists");
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public MessageDto handleIllegalArgumentException(IllegalArgumentException ex) {
+        return new MessageDto(ex.getMessage());
+    }
 }
