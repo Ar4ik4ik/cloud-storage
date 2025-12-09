@@ -8,6 +8,7 @@ import com.github.ar4ik4ik.cloudstorage.exception.StorageException;
 import com.github.ar4ik4ik.cloudstorage.mapper.ResourceMapper;
 import com.github.ar4ik4ik.cloudstorage.model.dto.ResourceInfoResponseDto;
 import com.github.ar4ik4ik.cloudstorage.service.StorageService;
+import com.github.ar4ik4ik.cloudstorage.utils.PathUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -96,7 +97,7 @@ public class StorageServiceImpl implements StorageService {
     public ResourceInfoResponseDto moveResource(@PathEnrich String from, @PathEnrich String to) {
         if (dao.isObjectExists(to)) {
             throw new ObjectAlreadyExistException();
-        } else if (!dao.isObjectExists(from)) {
+        } else if (!dao.isObjectExists(from) || !dao.isObjectExists(getParentPath(to, false))) {
             throw new ObjectNotFoundException();
         } else if (PathUtils.isAncestorOrSelf(from, to)) {
             throw new IllegalArgumentException("Cannot move folder into one of its subfolder");
