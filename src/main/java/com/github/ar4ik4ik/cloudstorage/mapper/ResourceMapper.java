@@ -40,13 +40,9 @@ public interface ResourceMapper {
     ResourceInfoResponseDto toUploadFileDto(ResourceInfo resourceInfo);
 
     // only when moving (renaming) file or directory
-    @Mapping(target = "path", expression = "java(to)")
-    @Mapping(target = "name", expression = "java(PathUtils.extractNameFromPath(from))")
-    @Mapping(target = "size", expression = "java(bytesCount)")
-    @Mapping(target = "type", expression = "java(PathUtils.isFolder(from) ? ResourceType.DIRECTORY.name() : ResourceType.FILE.name())")
-    ResourceInfoResponseDto toMoveResourceDto(String from, String to, long bytesCount);
-
-
-
-
+    @Mapping(target = "path", expression = "java(PathUtils.getParentPath(to, true))")
+    @Mapping(target = "name", expression = "java(PathUtils.extractNameFromPath(to))")
+    @Mapping(target = "size", expression = "java(PathUtils.isFolder(to) ? null : bytesCount)")
+    @Mapping(target = "type", expression = "java(PathUtils.isFolder(to) ? ResourceType.DIRECTORY.name() : ResourceType.FILE.name())")
+    ResourceInfoResponseDto toMoveResourceDto(String to, long bytesCount);
 }

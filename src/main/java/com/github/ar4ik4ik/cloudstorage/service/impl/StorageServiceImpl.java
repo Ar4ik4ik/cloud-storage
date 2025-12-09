@@ -115,7 +115,7 @@ public class StorageServiceImpl implements StorageService {
         }
 
         long bytesCount = getBytesCount(to);
-        return mapper.toMoveResourceDto(getParentPath(from, true), to, bytesCount);
+        return mapper.toMoveResourceDto(to, bytesCount);
     }
 
     @Override
