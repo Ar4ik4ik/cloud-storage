@@ -61,6 +61,10 @@ public class PathUtils {
         return name;
     }
 
+    public static boolean isAncestorOrSelf(String parentPath, String potentialChildPath) {
+        return potentialChildPath.startsWith(parentPath);
+    }
+
     public static String getFullPathFromRootAndDestination(String userRootPath, String pathToResource) {
         if (pathToResource.startsWith("/")) {
             return userRootPath.concat(pathToResource);

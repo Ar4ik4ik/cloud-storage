@@ -98,6 +98,8 @@ public class StorageServiceImpl implements StorageService {
             throw new ObjectAlreadyExistException();
         } else if (!dao.isObjectExists(from)) {
             throw new ObjectNotFoundException();
+        } else if (PathUtils.isAncestorOrSelf(from, to)) {
+            throw new IllegalArgumentException("Cannot move folder into one of its subfolder");
         }
 
         boolean isDirectory = isFolder(from);
@@ -108,6 +110,7 @@ public class StorageServiceImpl implements StorageService {
             // Попытка ручного отката, если не удалось удалить источник
             performRemove(to, isDirectory);
             log.error("Error moving resource, rolling back", e);
+            throw e;
         }
 
         long bytesCount = getBytesCount(to);
