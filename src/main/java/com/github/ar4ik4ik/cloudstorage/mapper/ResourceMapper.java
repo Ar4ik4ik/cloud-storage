@@ -12,7 +12,7 @@ import org.mapstruct.Mapping;
 public interface ResourceMapper {
 
     // create empty directory & upload directories
-    @Mapping(target = "path", expression = "java(PathUtils.getParentPath(directoryPath, false))")
+    @Mapping(target = "path", expression = "java(PathUtils.getParentPath(directoryPath, true))")
     @Mapping(target = "name", expression = "java(PathUtils.extractNameFromPath(directoryPath))")
     @Mapping(target = "size", ignore = true)
     @Mapping(target = "type", expression = "java(ResourceType.DIRECTORY.name())")
